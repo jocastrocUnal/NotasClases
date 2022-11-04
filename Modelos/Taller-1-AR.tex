@@ -1,0 +1,647 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Taller 1 de AR},
+  pdfauthor={Joan Nicolas Castro Cortes},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Taller 1 de AR}
+\author{Joan Nicolas Castro Cortes}
+\date{2022-04-05}
+
+\begin{document}
+\maketitle
+
+2.1 En la tabla B.1 del apéndice aparecen datos sobre el desempeño de
+los \(26\) equipos de la Liga Nacional de Fútbol en 1976. Se cree que la
+cantidad de yardas ganadas por tierra por los contrarios (\(x_8\)) tiene
+un efecto sobre la cantidad de juegos que gana un equipo (\(y\)).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tableB1 }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"C:/Users/nico9/Documents/Notebooks/Analisis de regresion/r/LinearModels/tableB1.csv"}\NormalTok{,}\AttributeTok{sep =} \StringTok{";"}\NormalTok{)}
+\NormalTok{tableB1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##               Team  y x_.1. x_.2. x_.3. x_.4. x_.5. x_.6. x_.7. x_.8. x_.9.
+## 1       Washington 10  2113  1985  38,9   647     4   868  59,7  2205  1917
+## 2        Minnesota 11  2003  2855  38,8   613     3   615    55  2096  1575
+## 3      New England 11  2957  1737  40,1   600    14   914  65,6  1847  2175
+## 4          Oakland 13  2285  2905  41,6   453    -4   957  61,4  1903  2476
+## 5       Pittsburgh 10  2971  1666  39,2   538    15   836  66,1  1457  1866
+## 6        Baltimore 11  2309  2927  39,7   741     8   786    61  1848  2339
+## 7      Los Angeles 10  2528  2341  38,1   654    12   754  66,1  1564  2092
+## 8           Dallas 11  2147  2737    37   783    -1   761    58  1821  1909
+## 9          Atlanta  4  1689  1414  42,1   476    -3   714    57  2577  2001
+## 10         Buffalo  2  2566  1838  42,3   542    -1   797  58,9  2476  2254
+## 11         Chicago  7  2363  1480  37,3   480    19   984  67,5  1984  2217
+## 12      Cincinnati 10  2109  2191  39,5   519     6   700  57,2  1917  1758
+## 13       Cleveland  9  2295  2229  37,4   536    -5  1037  58,8  1761  2032
+## 14          Denver  9  1932  2204  35,1   714     3   986  58,6  1709  2025
+## 15         Detroit  6  2213  2140  38,8   583     6   819  59,2  1901  1686
+## 16       Green Bay  5  1722  1730  36,6   526   -19   791  54,4  2288  1835
+## 17         Houston  5  1498  2072  35,3   593    -5   776  49,6  2072  1914
+## 18     Kansas City  5  1873  2929  41,1   553    10   789  54,3  2861  2496
+## 19           Miami  6  2118  2268  38,2   696     6   582  58,7  2411  2670
+## 20     New Orleans  4  1775  1983  39,3   783     7   901  51,7  2289  2202
+## 21 New York Giants  3  1904  1792  39,7   381    -9   734  61,9  2203  1988
+## 22   New York Jets  3  1929  1606  39,7   688   -21   627  52,7  2592  2324
+## 23    Philadelphia  4  2080  1492  35,5   688    -8   722  57,8  2053  2550
+## 24       St. Louis 10  2301  2835  35,3   741     2   683  59,7  1979  2110
+## 25       San Diego  6  2040  2416  38,7   500     0   576  54,9  2048  2628
+## 26   San Francisco  8  2447  1638  39,9   571    -8   848  65,3  1786  1776
+## 27         Seattle  2  1416  2649  37,4   563   -22   684  43,8  2876  2524
+## 28       Tampa Bay  0  1503  1503  39,3   470    -9   875  53,5  2560  2241
+\end{verbatim}
+
+y: Games won (per 14 - game season)\\
+x1: Rushing yards (season)\\
+x2: Passing yards (season)\\
+x3: Punting average (yards/punt)\\
+x4: Field goal percentage (FGs made/FGs attempted 2season)\\
+x5: Turnover differential (turnovers acquired -- turnovers lost)\\
+x6: Penalty yards (season)\\
+x7: Percent rushing (rushing plays/total plays)\\
+x8: Opponents ' rushing yards (season)\\
+x9: Opponents ' passing yards (season)
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\tightlist
+\item
+  Ajustar un modelo de regresión lineal simple que relacione los juegos
+  ganados, y, con las yardas ganadas por tierra por los contrarios,
+  \(x_8\).
+\end{enumerate}
+
+\textbf{\emph{Solución:}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{x }\OtherTok{=}\NormalTok{ tableB1[,}\DecValTok{10}\NormalTok{]}
+\NormalTok{y }\OtherTok{=}\NormalTok{ tableB1[,}\DecValTok{2}\NormalTok{]}
+\NormalTok{meanx }\OtherTok{=} \FunctionTok{mean}\NormalTok{(x)}
+\NormalTok{meany }\OtherTok{=} \FunctionTok{mean}\NormalTok{(y)}
+\NormalTok{Sxy }\OtherTok{=} \FunctionTok{sum}\NormalTok{(((x}\SpecialCharTok{{-}}\NormalTok{meanx))}\SpecialCharTok{*}\NormalTok{y)}
+\NormalTok{Sxx }\OtherTok{=} \FunctionTok{sum}\NormalTok{(((x}\SpecialCharTok{{-}}\NormalTok{meanx)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{))}
+\NormalTok{beta1 }\OtherTok{=}\NormalTok{ Sxy}\SpecialCharTok{/}\NormalTok{Sxx}
+\NormalTok{beta0 }\OtherTok{=}\NormalTok{ meany }\SpecialCharTok{{-}}\NormalTok{ beta1}\SpecialCharTok{*}\NormalTok{meanx}
+
+\FunctionTok{plot}\NormalTok{(x,y)}
+\FunctionTok{abline}\NormalTok{(}\AttributeTok{a=}\NormalTok{beta0,}\AttributeTok{b=}\NormalTok{beta1) }\CommentTok{\# Los parametros son el intercepto y la pendiente que calculamos}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Taller-1-AR_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Formar la tabla de análisis de varianza y probar el significado de la
+  regresión.
+\end{enumerate}
+
+\textbf{\emph{Solución:}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{xylm }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x)}
+\FunctionTok{summary}\NormalTok{(xylm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = y ~ x)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -3.804 -1.591 -0.647  2.032  4.580 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 21.788251   2.696233   8.081 1.46e-08 ***
+## x           -0.007025   0.001260  -5.577 7.38e-06 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.393 on 26 degrees of freedom
+## Multiple R-squared:  0.5447, Adjusted R-squared:  0.5272 
+## F-statistic:  31.1 on 1 and 26 DF,  p-value: 7.381e-06
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{anova}\NormalTok{(xylm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Analysis of Variance Table
+## 
+## Response: y
+##           Df Sum Sq Mean Sq F value    Pr(>F)    
+## x          1 178.09 178.092  31.103 7.381e-06 ***
+## Residuals 26 148.87   5.726                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{alpha }\OtherTok{=} \FloatTok{0.001}
+
+\NormalTok{SS\_T }\OtherTok{=} \FunctionTok{sum}\NormalTok{((y}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{))}\SpecialCharTok{{-}}\NormalTok{(((}\FunctionTok{sum}\NormalTok{(y))}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{)}\SpecialCharTok{/}\FunctionTok{length}\NormalTok{(x))}
+\NormalTok{SS\_Res }\OtherTok{=}\NormalTok{ SS\_T }\SpecialCharTok{{-}}\NormalTok{ (beta1}\SpecialCharTok{*}\NormalTok{Sxy)}
+\NormalTok{MS\_Res }\OtherTok{=}\NormalTok{ SS\_Res}\SpecialCharTok{/}\NormalTok{(}\FunctionTok{length}\NormalTok{(x) }\SpecialCharTok{{-}} \DecValTok{2}\NormalTok{)}
+\NormalTok{SS\_R }\OtherTok{=}\NormalTok{ beta1}\SpecialCharTok{*}\NormalTok{Sxy}
+\NormalTok{df\_R }\OtherTok{=} \DecValTok{1}
+\NormalTok{df\_Res }\OtherTok{=} \FunctionTok{length}\NormalTok{(x) }\SpecialCharTok{{-}} \DecValTok{2}
+\NormalTok{df\_T }\OtherTok{=} \FunctionTok{length}\NormalTok{(x) }\SpecialCharTok{{-}}\DecValTok{1}
+\NormalTok{MS\_R }\OtherTok{=}\NormalTok{ SS\_R}\SpecialCharTok{/}\NormalTok{df\_R}
+\NormalTok{MS\_Res }\OtherTok{=}\NormalTok{ SS\_Res}\SpecialCharTok{/}\NormalTok{df\_Res}
+\NormalTok{F0 }\OtherTok{=}\NormalTok{ MS\_R}\SpecialCharTok{/}\NormalTok{MS\_Res }
+\NormalTok{F0test }\OtherTok{=} \FunctionTok{qf}\NormalTok{(}\DecValTok{1}\SpecialCharTok{{-}}\NormalTok{alpha,}\AttributeTok{df1 =} \DecValTok{1}\NormalTok{,}\AttributeTok{df2 =}\NormalTok{ (}\FunctionTok{length}\NormalTok{(x)}\SpecialCharTok{{-}}\DecValTok{2}\NormalTok{))}
+\NormalTok{pvalue\_F0 }\OtherTok{=} \DecValTok{1}\SpecialCharTok{{-}}\FunctionTok{pf}\NormalTok{(F0,}\AttributeTok{df1 =} \DecValTok{1}\NormalTok{,}\AttributeTok{df2 =}\NormalTok{ (}\FunctionTok{length}\NormalTok{(x)}\SpecialCharTok{{-}}\DecValTok{2}\NormalTok{))}
+
+\NormalTok{SS\_R}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 178.0923
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{SS\_Res}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 148.872
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{SS\_T}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 326.9643
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df\_R}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df\_Res}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 26
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df\_T}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 27
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{MS\_R}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 178.0923
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{MS\_Res}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 5.725845
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{F0}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 31.10324
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pvalue\_F0}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 7.380709e-06
+\end{verbatim}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1739}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1739}}
+  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2174}}
+  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2174}}
+  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2174}}@{}}
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedright
+Source of Variation
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Sum of Squares
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Degrees of Freedom
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Mean Square
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+F\_(0)
+\end{minipage} \\
+\midrule
+\endhead
+Regression & SS\_(R)= hat(beta)\emph{(1)S}(xy) & 1 & MS\_(R) &
+MS\_(R)//MS\_(``Res'') \\
+Residual & SS\_(``Res'')=SS\_(T)- hat(beta)\emph{(1)S}(xy) & n-2 &
+MS\_(``Res'') & \\
+Total & SS\_(T) & n-1 & & \\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1429}}
+  >{\centering\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1786}}
+  >{\centering\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1786}}
+  >{\centering\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1786}}
+  >{\centering\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1786}}@{}}
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedright
+Source of Variation
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Sum of Squares
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Degrees of Freedom
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Mean Square
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\(F_0\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\$P value
+\end{minipage} \\
+\midrule
+\endhead
+Regression & 178.0923 & 1 & 178.092 & 31.10324 & 7.380709e-06 \\
+Residual & 148.872 & 26 & 5.725845 & & \\
+Total & 326.9643 & 27 & & & \\
+\bottomrule
+\end{longtable}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\setcounter{enumi}{2}
+\item
+  Determinar un intervalo de confianza de 95\% para la pendiente.
+\item
+  ¿Qué porcentaje de variabilidad total da \(y\), y explica este modelo?
+\item
+  Determinar un intervalo de confianza de \(95\)\% para la cantidad
+  promedio de juegos ganados, si la distancia ganada por tierra por los
+  contrarios se limita a \(2000\) yardas.
+\end{enumerate}
+
+2.2 Supóngase que se quiere usar el modelo desarrollado en el problema
+2.1 para pronosticar la cantidad de juegos que ganará un equipo si puede
+limitar los avances por tierra de sus contrarios a 1 800 yardas.
+Determinar un estimado de punto de la cantidad de juegos ganados
+cuando.vg = I 800. Determinar un intervalo de predicción de 90\% para la
+cantidad de juegos ganados. 2.3 La tabla B.2 del apéndice contiene datos
+reunidos durante un proyecto de energía solar en el Tecnológico de
+Georgia. a. Ajustar un modelo de regresión lineal simple que relacione
+el flujo total de calory (kilowatts) con la deflexión radial de los
+rayos desviados x4 (milirradianes). b. Formar la tabla de análisis de
+varianza y probar la significancia de la regresión. c.~Determinar un
+intervalo de confianza de 99\% para la pendiente. d.~Calcular R2. e.
+Determinar un intervalo de confianza de 95\% para el flujo promedio de
+calor, cuando la deflexión radial es 16.5 milirradianes. 2.4 La tabla
+B.3 del apéndice contiene datos sobre el rendimiento de la gasolina, en
+millas, de 32 automóviles diferentes. a. Ajustar un modelo de regresión
+lineal simple que relacione el rendimiento de la gasolina y (millas por
+galón) y la cilindrada del motor (pulgadas cúbicas). b. Formar la tabla
+de análisis de varianza y prueba de significancia de la regresión.
+c.~¿Qué porcentaje de la variabilidad total del rendimiento de la
+gasolina explica la relación lineal con la cilindrada del motor?
+d.~Determinar un intervalo de confianza de 95\% para el rendimiento
+promedio de gasolina, si el desplazamiento del motor es 275 pulg3. e.
+Suponer que se desea pronosticar el rendimiento de gasolina que tiene un
+coche con motor de 275 pulg3. Determine un estimado puntual para el
+rendimiento. Determinar un intervalo de predicción de 95\% para el
+rendimiento. .f Comparar los dos intervalos obtenidos en las partes d y
+e. Explicar la diferencia entre ellos. ¿Cuál es más amplio y por
+qué?REGRESIóN LINEAL SIMPLE 55 2.5 Acerca de los datos sobre rendimiento
+de gasolina en la tabla B.3 del apéndice, repetir el problema 2.4
+(partes a, b y c) usando el peso del vehículo, xI0, como la variable
+regresora. Con base en una comparación entre los dos modelos, ¿se puede
+llegar a la conclusión de que x \{ es mejor opción como regresor que
+x10? La tabla B.4 del apéndice presenta datos de 27 casas vendidas en
+Erie, Pennsylvania. a. Ajustar un modelo de regresión lineal simple que
+relacione el precio de venta de la casa con los impuestos actuales
+(JC,). b. Probar la significancia de la regresión. c.~¿Qué porcentaje de
+la variabilidad total del precio de venta queda explicado con este
+modelo? d.~Determinar un intervalo de confianza de 95\% para /3(. e.
+Determinar un intervalo de confianza de 95\% para el precio promedio de
+venta de una casa, para la cual los impuestos actuales son \$750. Se
+cree que la pureza del oxígeno producido con un proceso de
+fraccionamiento está relacionada con el porcentaje de hidrocarburos en
+el condensador principal de la unidad de procesamiento. A continuación
+se muestran los datos de veinte muestras. 2.6 2.7 Pureza (\%)
+Hidrocarburos (\%) Pureza (\%) Hidrocarburos (\%) 86.91 1.02 96.73 99.42
+98.66 1.46 89.85 1.11 1.55 90.28 86.34 92.58 1.43 1.55 1.11 96.07 1.55
+1.01 93.65 1.40 87.33 0.95 87.31 1.15 86.29 91.86 1.11 95.00 96.85 85.20
+90.56 1.01 0.87 0.99 95.61 1.43 0.95 89.86 1.02 0.98 a. Ajustar un
+modelo de regresión lineal simple a los datos. b. Probar la hipótesis
+H0: /3, = 0. c.~Calcular /?2. d.~Determinar un intervalo de confianza de
+95\% para la pendiente. e. Determinar un intervalo de confianza de 95\%
+para la pureza media, cuando el porcentaje de hidrocarburos es 1.00.
+Para los datos de la planta de oxígeno en el problema 2.7, suponer que
+la pureza y el porcentaje de hidrocarburos son variables aleatorias con
+distribución normal conjunta. a. ¿Cuál es la correlación entre la pureza
+del oxígeno y el porcentaje de hidrocarburos ? b. Probar la hipótesis
+que p = 0. c.~Establecer un intervalo de confianza de 95\% para p. Con
+los datos de tiempo de entrega de bebidas gaseosas de la tabla 2.9,
+después de examinar el modelo original de regresión (Ej. 2.9), un
+analista afirmó que el modelo es inválido, porque la ordenada al origen
+no es cero. Dijo que si se entregaran cero cajas, el tiempo para
+abastecer y dar servicio a la máquina sería cero, y por eso el modelo de
+línea recta debe pasar por el origen. ¿Qué se le contestaría? Ajustar un
+modelo sin ordenada al origen a esos datos, y determinar qué modelo es
+el mejor. 2.8 2.956 INTRODUCCIóN AL ANáLISIS DE REGRESIóN LINEAL 2.10 A
+continuación se muestran el peso y la presión sistólica sanguínea de 26
+hombres seleccionados al azar, en el grupo de edades de 25 a 30. Suponer
+que el peso y la presión sanguínea (BP) tienen distribución normal
+conjunta. a. Determine una recta de regresión que relacione la presión
+sistólica sanguínea con el peso. b. Estimar el coeficiente de
+correlación. c.~Probar la hipótesis que p = 0. d.~Probar la hipótesis
+que p = 0.6. e. Determinar un coeficiente de confianza de 95\% para p.
+Persona Peso BP sistólica Persona Peso BP sistólica 1 165 130 14 172 153
+2 167 133 15 159 128 3 180 150 16 168 132 4 155 128 17 174 149 5 212 151
+18 183 158 6 175 146 19 215 150 7 190 150 20 195 163 8 210 140 21 180
+156 9 200 148 22 143 124 10 149 125 23 240 170 11 158 133 24 235 165 12
+169 135 25 192 160 13 170 150 26 187 159 2.11 Para los datos de peso y
+presión sanguínea del problema 2.10, ajustar a ellos un modelo sin
+ordenada al origen y compararlo con el obtenido en el problema 2.10.
+¿Cuál modelo se diría que es el mejor? 2.12 Se cree que la cantidad de
+libras de vapor usadas en una planta por mes está relacionada con la
+temperatura ambiente promedio. A continuación se presentan los consumos
+y las temperaturas del último año. Mes Temperatura Uso / 1000 Mes
+Temperatura Uso / 1000 Ene. Feb. 21 185.79 214.47 288.03 424.84 454.68
+539.03 Jul.~68 621.55 675.06 562.03 452.93 369.95 273.98 24 Ago. 74
+Mar.~32 Sep. Oct. Nov. Die. 62 Abr. Mayo Jun. 47 50 50 41 59 30 a.
+Ajustar un modelo de regresión lineal simple a los datos. b. Probar la
+significancia de la regresión. c.~En la administración de la planta se
+cree que un aumento de 1 grado en la temperatura ambiente promedio hace
+aumentar 10 000 libras el consumo mensual de vapor. ¿Estos datos
+respaldan la afirmación? d.~Determinar un intervalo de predicción de
+99\% para el uso de vapor en un mes con temperatura ambiente promedio de
+58°.REGRESIóN LINEAL SIMPLE 57 2.13 Davidson (``Update on Ozone Trends
+in California's South Coast Air Basin'', Air and Waste, 43, 226, 1993)
+estudió las concentraciones de ozono en la cuenca aérea de la costa sur
+de California, durante los años 1976 a 1991. Cree que la cantidad de
+días en que las concentraciones de ozono fueron mayores que 0.20 ppm (la
+respuesta) depende del índice meteorológico estacional, que es el
+promedio estacional de la temperatura con 850 milibars (el regresor). La
+siguiente tabla muestra los datos. Año Días índice 1976 91 16.7 1977 105
+17.1 1978 106 18.2 1979 108 18.1 1980 88 17.2 1981 91 18.2 1982 58 16.0
+1983 82 17.2 1984 81 18.0 1985 65 17.2 1986 61 16.9 1987 48 17.1 1988 61
+18.2 1989 43 17.3 1990 33 17.5 1991 36 16.6 a. Trazar un diagrama de
+dispersión con los datos. b. Estimar la ecuación de predicción.
+c.~Probar la significancia de la regresión. d.~Calcular y graficar las
+bandas de 95\% de confianza y de predicción. 2.14 Hsuie, Ma y Tsai
+(``Separación y caracterización de copoliésteres termotrópicos del ácido
+p-hidroxibenzoico, ácido sebácico e hidroquinona'', Journal of Applied
+Polymer Science, 56, 471-476, 1995) estudian el efecto de la relación
+molar del ácido sebácico (el regresor) sobre la viscosidad intrínseca de
+los copoliésteres (la respuesta). La siguiente tabla muestra los datos.
+Radio Viscosidad 1.0 0.45 0.9 0.20 0.8 0.34 0.7 0.58 0.6 0.70 0.5 0.57
+0.4 0.55 0.3 0.44 a. Trazar un diagrama de dispersión de los datos. b.
+Estimar la ecuación de predicción. c.~Hacer un análisis completo y
+adecuado (pruebas estadísticas, cálculo de R2,etcétera). d.~Calcular y
+graficar las bandas de 95\% de confianza y de predicción.58 INTRODUCCIóN
+AL ANáLISIS DE REGRESIóN LINEAL 2.15 Byers y Williams (``Viscosities of
+Binary and Ternary Mixtures of Polynomatic Hydrocarbons'', Journal of
+Chemical and Engineering Data, 32, 349-354, 1987) estudiaron el impacto
+de la temperatura sobre la viscosidad de mezclas de tolueno y tetralina.
+La tabla siguiente muestra los datos para mezclas con fracción molar de
+tolueno igual a 0.4. Viscosidad (mPa •s) Temperatura (°C) 24.9 1.1330
+0.9772 0.8532 0.7550 0.6723 0.6021 0.5420 0.5074 35.0 44.9 55.1 65.2
+75.2 85.2 95.2 a. Estimar la ecuación de predicción. b. Hacer un
+análisis completo del modelo. c.~Calcular y graficar las bandas de 95\%
+de confianza y de predicción. 2.16 Carroll y Spiegelman (``The Effects
+of Ignoring Small Measurement Errors in Precision Instrument
+Calibration'', Journal of Quality Technology, 18, 170-173, 1986)
+examinan la relación entre la presión en un tanque y el volumen de
+líquido. La siguiente tabla muestra los datos. Use un paquete adecuado
+de programas estadísticos para efectuar un análisis de ellos. Comente
+los resultados obtenidos con la rutina del programa. Volumen Presión
+Volumen Presión Volumen Presión 2084 4599 2842 6380 3789 8599 2084 4600
+3030 6818 3789 8600 2273 5044 3031 6817 3979 9048 2273 5043 3031 6818
+3979 9048 2273 5044 3221 7266 4167 9484 2463 5488 3221 7268 4168 9487
+2463 5487 3409 7709 4168 9487 2651 5931 3410 7710 4358 9936 2652 5932
+3600 8156 4358 9938 10377 10379 2652 5932 3600 8156 4546 2842 6380 3788
+8597 4547 2.17 Para el modelo de regresión lineal simple y = 50 + 10.x +
+£, donde e tiene NID (0, 16), suponer que se usan n = 20 pares de
+observaciones para ajustar este modelo. Generar 500 muestras de 20
+observaciones, tomando una observación para cada valor de x = 1, 1.5, 2,
+. . . , 10 para cada muestra. a. Para cada muestra, calcular los
+estimados de la pendiente y la ordenada al origen por mtar ínimos la
+forma cuadrados de esos.histogramas Trazar histogramas . de los valores
+muéstrales de\^{} y /3,. Comenb. Para cada muestra, calcular un estimado
+de E(y\x = 5). Trazar un histograma de los estimados obtenidos. Comentar
+la forma del histograma.REGRESIóN LINEAL SIMPLE 59 c.~Determinar un
+intervalo de confianza de 95\% para la pendiente en cada muestra.
+¿Cuántos de los intervalos contienen el valor verdadero /3, = 10? ¿Es lo
+que se esperaba? d.~Para cada estimado de E(ylx = 5) en la parte b,
+calcular el intervalo de confianza de 95\%. ¿Cuántos de esos intervalos
+contienen el valor verdadero de E(y\x = 5) = 100? ¿Es lo que se
+esperaba? 2.18 Repetir el problema 2.17 usando sólo 10 observaciones
+para cada muestra y tomando una observación de cada nivel \emph{= 1, 2,
+3, . . . , 10. ¿Qué impacto tiene usar n = 10 sobre las respuestas en el
+problema 2.17? Comparar las longitudes de los intervalos de confianza y
+el aspecto de los histogramas. 2.19 Se tiene el modelo de regresión
+lineal simple y = /30 + /3,} + e, con E(e) = 0, Var íe) = cr 2 y eno
+correlacionado. a. Demostrar que Cov(/3y, =-x\textless r2/Sxr b.
+Demostrar que Cov(y, /3\textbar) = 0. 2.20 Se tiene el modelo de
+regresión lineal simple y = /3,, + /3,\emph{+ e, con E(é) = 0, Var(e) =
+\textless r 2, y e no correlacionado. a. Demostrar que E\{MSR )= a2 +
+/32S„. b. Demostrar que E(MSRe¡) = a2. 2.21 Suponer que se debe ajustar
+el modelo rectilíneo de regresión y = /3() + /3,},, pero que la
+respuesta está afectada por una segunda variable x2, de tal modo que la
+verdadera función de regresión es E(y) = A) + P*i + P2 X2 a. ¿Es
+insesgado el estimador de mínimos cuadrados para la pendiente, en el
+modelo original de regresión lineal simple? b. Demostrar el sesgo en
+/3i- 2.22 Considérese el estimador la 2 de máxima verosimilitud de
+\textless x 2 en el modelo de regresión lineal simple. Se sabe que a2 es
+un estimador sesgado de cr 2. a. Demostrar la cantidad de sesgo en a2 .
+b. ¿Qué sucede con el sesgo a medida que se hace grande el tamaño n de
+la muestra? 2.23 Suponer que se debe ajustar una recta, y que se desea
+que el error estándar de la pendiente sea el mínimo posible. Suponer que
+la ``región de interés de x es-1 \textless{}\emph{\textless{} 1. ¿Dónde
+se deber ían hacer las observaciones x (, x2,. . . ,}„? Comente los
+aspectos prácticos de este plan de recolección de datos. 2.24 Se tienen
+los datos del problema 2.12. Supóngase que el consumo de Vapor y la
+temperatura ambiente tienen distribución normal conjunta. a. Determinar
+la correlación entre el consumo de vapor y la temperatura ambiente
+promedio mensual. b. Probar la hipótesis que p = 0. c.~Probar la
+hipótesis que p = 0.5. d.~Determinar un intervalo de confianza de 99\%
+para p. 2.25 Demostrar que el valor máximo de R2 es menor que I si los
+datos contienen observaciones de y diferentes, para el mismo valor de
+x.60 INTRODUCCIóN AL ANáLISIS DE REGRESIóN LINEAL 2.26 Se tiene el
+modelo de regresión lineal simple y = P0 + plx + e donde se conoce la
+ordenada al origen /Jn. a. Determinar el estimador de /3, de mínimos
+cuadrados para este modelo. ¿Parece razonable ese resultado? b. ¿Cuál es
+la varianza de la pendiente (/5,) para el estimador de mínimos cuadrados
+que se determinó en la parte a? c.~Determinar un intervalo de confianza
+de 100(1- a) por ciento para /3,. ¿Es este intervalo más angosto que el
+estimador para el caso en el que se desconocen tanto la pendiente como
+la ordenada al origen? 2.27 Se tienen los residuales de mínimos
+cuadrados e¡ = y¡- \% i-1, 2,. .., n, obtenidos con el modelo de
+regresión lineal simple. Determinar la varianza Var(e,) de los
+residuales. ¿Es constante la varianza de los residuales? Comentar por
+qué.
+
+\end{document}
