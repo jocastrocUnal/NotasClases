@@ -1,0 +1,2161 @@
+---
+title: "Taller 1 de AR"
+author: "Joan Nicolas Castro Cortes"
+date: '2022-04-05'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+### **Ejercicio 2.1**
+
+ En la tabla B.1 del apéndice aparecen datos sobre el desempeño de los $26$ equipos de la Liga Nacional de Fútbol en 1976. Se cree que la cantidad de yardas ganadas por tierra por los contrarios ($x_8$) tiene un efecto sobre la cantidad de juegos que gana un equipo ($y$).
+
+```{r}
+tableB1 <- read.csv("C:/Users/nico9/Documents/Notebooks/Analisis de regresion/r/LinearModels/tableB1.csv",sep = ";")
+head(tableB1)
+```
+
+y: Games won (per 14 - game season)					
+x1: Rushing yards (season)					
+x2: Passing yards (season)					
+x3: Punting average (yards/punt)					
+x4: Field goal percentage (FGs made/FGs attempted 2season)					
+x5: Turnover differential (turnovers acquired – turnovers lost)					
+x6: Penalty yards (season)					
+x7: Percent rushing (rushing plays/total plays)					
+x8: Opponents ’ rushing yards (season)					
+x9: Opponents ’ passing yards (season)					
+
+
+a. Ajustar un modelo de regresión lineal simple que relacione los juegos ganados, con las yardas ganadas por tierra por los contrarios, $x_8$.
+
+***Solución:***
+
+Vamos a hacer uso del método de los mínimos cuadrados para ajustar un modelo de regresión lineal simple. Teniendo en cuenta los estimadores insesgados de los parámetros $\beta_0$ y $\beta_1$ del modelo $y=\beta_0 + \beta_1 x$ que son 
+
+$$
+\hat{\beta}_0 = \bar{y} -\hat{\beta}_1\bar{x}
+$$
+
+y
+
+$$
+\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum_{i=1}^{n} (x_i - \bar{x})y_i }{\sum_{i=1}^n (x_i-\bar{x})^2}
+$$
+
+tenemos el modelo $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$. Por lo tanto el modelo ajustado se calcula de la siguiente manera:
+
+```{r}
+x = tableB1[,10]
+y = tableB1[,2]
+meanx = mean(x)
+meany = mean(y)
+Sxy = sum(((x-meanx))*y)
+Sxx = sum(((x-meanx)^2))
+beta1 = Sxy/Sxx
+beta0 = meany - beta1*meanx
+
+plot(x,y)
+abline(a=beta0,b=beta1) # Los parametros son el intercepto y la pendiente que calculamos
+```
+
+b. Formar la tabla de análisis de varianza y probar el significado de la regresión.
+
+***Solución:***
+
+- *Anova*
+
+Para desarrollar el análisis de varianza tengamos en cuenta la identidad fundamental del análisis de varianza para el modelo de regresión que nos dice
+
+$$
+\begin{split}
+\sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2} 
+& =\sum_{i=1}^{n}\left(\hat{y}_{i}-\bar{y}\right)^{2} + \sum_{i=1}^{n}\left(y_{i}-\hat{y}_{i}\right)^{2} \\
+SS_T & = SS_R + SS_{\text{Res}}
+\end{split}
+$$
+
+donde al lado izquierdo tenemos la suma de los cuadrados de las observaciones corregidas ($SS_T$) y al derecho la suma de cuadrados del modelo ($SS_R$) mas la suma del cuadrado de los residuales ($SS_{\text{Res}}$). 
+
+También tenemos que los grados de libertad correspondientes vienen dados de la siguiente manera
+
+$$
+\begin{split}
+d f_{\mathrm{T}} &=d f_{\mathrm{R}}+d f_{\mathrm{Res}} \\
+n-1 &=1+(n-2)
+\end{split}
+$$
+
+dado que para $SS_T$ se pierde un grado de libertad al ajustar de la forma $\sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)$ en las desviaciones $\left(y_{i}-\bar{y}\right)$, $SS_T$ está determinado por un único parámetro ($\hat{\beta}_1$ en $SS_R = \hat{\beta}_1S_{xy}$), y $SS_{\text{Res}}$ tiene dos grados de libertad menos dado que al ajustar $\sum_{i=1}^{n}\left(y_{i}-\hat{y}_{i}\right)$ se pierden dos grados de libertad dado que las desviaciones $\left(y_{i}-\hat{y}_{i}\right)$ son resultado de estimar $\hat{\beta}_0$ y $\hat{\beta}_1$
+
+De este modo al hacer el análisis de varianza con la hipótesis nula $H_0=\beta_1=0$ tenemos que el estadístico de prueba es
+
+$$
+F_0 = \frac{SS_R/df_R}{SS_{\text{Res}/df_{\text{Res}}}} = \frac{SS_R/1}{SS_{\text{Res}}/(n-2)} = \frac{MS_R}{MS_{\text{Res}}} = \frac{MS_R}{\hat{\sigma}^2} \sim F_{1,n-2}
+$$
+
+dado que $SS_{R} = MS_R/\sigma^2 \sim \chi^2_{1}$ y $SS_{\text{Res}} = MS_{\text{Res}}/\sigma^2 \sim \chi^2_{n-2}$. Donde rechazaremos la hipótesis $H_0=\beta_1=0$ si $F_0 > F_{1-\alpha,1,n-2}$
+
+Tenemos que para un $\alpha = 0.001$ el análisis de la varianza viene dado por el siguiente cálculo
+
+```{r}
+alpha = 0.001
+
+SS_T = sum((y^2))-(((sum(y))^2)/length(x))
+SS_Res = SS_T - (beta1*Sxy)
+SS_R = beta1*Sxy
+
+df_T = length(x) -1
+df_Res = length(x) - 2
+df_R = 1
+
+MS_Res = SS_Res/df_Res
+MS_R = SS_R/df_R
+
+F0 = MS_R/MS_Res 
+F0test = qf(1-alpha,df1 = 1,df2 = (length(x)-2))
+pvalue_F0 = 1-pf(F0,df1 = 1,df2 = (length(x)-2))
+
+SS_R
+SS_Res
+SS_T
+df_R
+df_Res
+df_T
+MS_R
+MS_Res
+F0
+F0test
+pvalue_F0
+```
+| Source of Variation | Sum of Squares | Degrees of Freedom | Mean Square | F_(0) |
+| :--- | :--- | :---: | :---: | :---: |
+| Regression | $SS_R$= $\hat{\beta}_1S_{xy}$ | $1$ | $MS_R$ | $MS_R/MS_\text{Res}$ |
+| Residual | $SS_\text{Res}=SS_T- \hat{\beta}_1S_{xy}$ | $n-2$ | $MS_\text{Res}$ |  |
+| Total | $SS_{T}$ | $n-1$ |  |  |
+
+
+| Source of Variation | Sum of Squares | Degrees of Freedom | Mean Square | $F_0$ | $P$ value | 
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| Regression | 178.0923 | 1 | 178.092 |31.10324 | 7.380709e-06 |
+| Residual | 148.872 | 26 | 5.725845 |  |  |
+| Total | 326.9643 | 27 |  |  |  |
+
+***Dado que tenemos que $F_0=31.10324 > F_{1-\alpha,1,n-2}=13.73897$ rechazamos la hipótesis que nos dice que $\beta_1 = 0$ con una significancia del $0.1\%$ y un p valor de $7.380709e^{-06}$***
+
+- *Significancia de la regresión*
+
+Para la significancia de la regresión tengamos en cuenta que, en este caso, no conocemos la varianza poblacional; entonces para el test de hipótesis $H_0 = \beta_1 = \beta_{10} = 0$ tenemos el estadístico de prueba
+
+$$
+t_0 = \frac{\hat{\beta}_1 - \beta_{01}}{\sqrt{MS_{\text{Res}}/S_{xx}}} = \frac{\hat{\beta}_1 - \beta_{01}}{\text{se}(\hat{\beta}_1)} = \frac{\hat{\beta}_1}{\text{se}(\hat{\beta}_1)} \sim t_{n-2}
+$$
+
+dado que $MS_\text{Res}  = \hat{\sigma}^2$ es un estimador insesgado de $\sigma^2$, $(n-2)MS_\text{Res}/\sigma^2 \sim \chi^2_{n-2}$, y $MS_\text{Res}$ con $\hat{\beta}_1$ son independientes. Donde rechazamos la hipótesis, que nos dice que tenemos una pendiente nula en este caso, si $|t_0| > t_{1-\alpha/2,n-2}$.
+
+De este modo tenemos que para un $\alpha = 0.05$ el test de significancia de la regresión viene dado por el siguiente cálculo
+
+```{r}
+alpha = 0.05
+se_beta1 = sqrt(MS_Res/Sxx)
+t0 = (beta1-0)/se_beta1 # el estadístico de prueba preguntando si \hat{\beta}_1 = \beta_{10} = 0
+t0test = qt((1 - alpha/2),df=(length(x)-2)) 
+pvalue_t0 = 2*pt(-abs(t0),df=(length(x)-2))
+
+t0
+t0test
+pvalue_t0
+```
+
+***Dado que tenemos que $|t_0|=5.577028 > t_{1-\alpha/2,n-2}=2.055529$ rechazamos la hipótesis que nos dice que $\beta_1 = 0$ con una significancia del $5\%$ y un p valor de $7.380709e^{-06}$***
+
+Podemos verificar los resultados en $R$ haciendo uso de las funciones `lm()` para crear el objeto correspondiente al modelo lineal, `summary()` para ver la significancia de la regresión y el intercepto y `anova()` para ver el análisis de varianza.
+
+```{r}
+xylm <- lm(y ~ x)
+```
+```{r}
+summary(xylm)
+```
+```{r}
+anova(xylm)
+```
+
+c. Determinar un intervalo de confianza de 95% para la pendiente.
+
+***Solución:***
+
+Teniendo en cuenta que 
+
+$$
+t_0 = \frac{\hat{\beta}_1 - \beta_{01}}{\sqrt{MS_{\text{Res}}/S_{xx}}} = \frac{\hat{\beta}_1 - \beta_{01}}{\text{se}(\hat{\beta}_1)} \sim t_{n-2}
+$$
+
+por lo tanto un intervalo de confianza de $100(1-\alpha)\%$ de la pendiente $\beta_1$ está dado por 
+
+$$
+\hat{\beta}_{1}-t_{\alpha / 2, n-2} \operatorname{se}\left(\hat{\beta}_{1}\right) \leq \hat{\beta}_{1} \leq \hat{\beta}_{1}+t_{\alpha / 2, n-2} \operatorname{se}\left(\hat{\beta}_{1}\right)
+$$
+de este modo tenemos que el intervalo de confianza de $100(1-\alpha)\% = 95\%$ de la pendiente dadas las observaciones es
+
+```{r}
+alpha = 0.05
+se_beta1 = sqrt(MS_Res/Sxx)
+
+IC_beta1_inf = beta1-(qt((1-alpha/2),df=(length(x)-2))*(se_beta1))
+IC_beta1_sup = beta1+(qt((1-alpha/2),df=(length(x)-2))*(se_beta1))
+IC_beta1 = c(IC_beta1_inf,IC_beta1_sup)
+IC_beta1
+```
+
+***Con una confianza del 95% el valor real del parámetro $\beta_1$ se encuentra entre $(-0.009614347 ,-0.004435854)$***
+
+d. ¿Qué porcentaje de variabilidad total da $y$, y explica este modelo?
+
+***Solución:***
+
+Dado que $SS_T$ es la medida de la variabilidad en $y$ sin considerar el efecto de la variable regresora $x$ y $SS_\text{Res}$ es la medida de la variabilidad sobrante despues de considerar la variable regresora $x$ tenemos que el coeficiente de determinación $R^2 = \frac{SS_R}{SS_T} = 1- \frac{SS_\text{Res}}{SS_T}$ es considerado también la proporción de la variación explicada por el regresor $x$. Por lo que tenemos 
+
+```{r}
+R2 = SS_R/SS_T 
+R2
+```
+
+***El $54.44\%$ de la fuerza de la variabilidad se explica en el modelo de regresión***
+
+Para explicar el modelo tengamos en cuenta primero que deberíamos suponer que el intercepto es $\beta_0 = 14$ dado que es plausible que si un equipo tiene $0$ yardas gandas durante una temporada casi seguramente gane los 14 partidos de la temporada. Esto se refuerza con el hecho de tener una pendiente negativa puesto que a más yardas ganadas por los contrarios menos juegos ganan los equipos. 
+
+e. Determinar un intervalo de confianza de $95$% para la cantidad promedio de juegos ganados, si la distancia ganada por tierra por los contrarios se limita a $2000$ yardas.
+
+***Solución:***
+
+Nos piden calcular la respuesta media $E(y)$ de juegos ganados para un número para un número de yardas ganadas del equipo contrario $x_0=2000$. Dado que $x_0$ se encuentra dentro de los valores de yardas con los que se planteo el modelo, podemos decir que un estimador insesgado de $E(y|x_0)$ es
+
+$$
+\widehat{E\left(y \mid x_{0}\right)}=\hat{\mu}_{y \mid x_{0}}=\hat{\beta}_{0}+\hat{\beta}_{1} x_{0}
+$$
+
+y su varianza es 
+
+$$
+\begin{split}
+\operatorname{Var}\left(\hat{\mu}_{y \mid x_{0}}\right) &=\operatorname{Var}\left(\hat{\beta}_{0}+\hat{\beta}_{1} x_{0}\right)=\operatorname{Var}\left[\bar{y}+\hat{\beta}_{1}\left(x_{0}-\bar{x}\right)\right] \\
+&=\frac{\sigma^{2}}{n}+\frac{\sigma^{2}\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}=\sigma^{2}\left[\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right]
+\end{split}
+$$
+
+Tambien vemos que como $E(y|x) = \hat{\mu}_{y \mid x_{0}}$ es es una combinación lineal de la $y_i$ tenemos que 
+
+$$\hat{\mu}_{y \mid x_{0}} \sim N\left( \beta_0 + \beta_1 x_0 , \sigma^{2} \left[\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right] \right)$$
+
+Ahora para construir un estimador insesgado como $\text{Cov}(\bar{y},\hat{\beta_1}) = 0$
+
+$$
+\frac{\hat{\mu}_{y \mid x_{0}}-E\left(y \mid x_{0}\right)}{\sqrt{M S_{\operatorname{Res}}\left(1 / n+\left(x_{0}-\bar{x}\right)^{2} / S_{x x}\right)}} \sim t_{(n-2)}
+$$
+
+lo que nos deja que un intervalos de confianza de $100(1-\alpha)\%$ de la respuesta media en un punto $x=x_0$ es 
+
+$$
+\begin{split}
+\hat{\mu}_{y \mid x_{0}}-t_{\alpha / 2, n-2} \sqrt{M S_{\mathrm{Res}}\left(\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\leq \\ E\left(y \mid x_{0}\right)  \leq \\\hat{\mu}_{y \mid x_{0}}+t_{\alpha / 2, n-2} \sqrt{M S_{\operatorname{Res}}\left(\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\end{split}
+$$
+
+entonces ***el intervalo de confianza del $95\%$ de la respuesta media de juegos ganados para una avance de limitado a $2000$ yardas es***
+
+```{r}
+x0 = 2000
+
+muyx0 = beta0 + beta1*x0
+se_muyx0 = sqrt( MS_Res*( (1/length(x)) + ((x0-meanx)^2)/Sxx ) )
+IC_muyx0_inf = muyx0 - (qt((1-alpha/2),df=(length(x)-2)))*se_muyx0
+IC_muyx0_sup = muyx0 + (qt((1-alpha/2),df=(length(x)-2)))*se_muyx0
+IC_muyx0 = c(IC_muyx0_inf,IC_muyx0_sup )
+IC_muyx0
+```
+
+### **Ejercicio 2.2**
+
+Supóngase que se quiere usar el modelo desarrollado en el problema 2.1 para pronosticar la cantidad de juegos que ganará un equipo si puede limitar los avances por tierra de sus contrarios a $1800$ yardas. Determinar un estimado de punto de la cantidad de juegos ganados cuando.$x_8= 1800$. Determinar un intervalo de predicción de $90\%$ para la cantidad de juegos ganados.
+
+```{r}
+tableB1 <- read.csv("C:/Users/nico9/Documents/Notebooks/Analisis de regresion/r/LinearModels/tableB1.csv",sep = ";")
+head(tableB1)
+```
+
+***Solución:***
+
+Se hizo uso del método de los mínimos cuadrados para ajustar un modelo de regresión lineal simple del ejercicio 2.1. Teniendo en cuenta los estimadores insesgados de los parámetros $\beta_0$ y $\beta_1$ del modelo $y=\beta_0 + \beta_1 x$ que son 
+
+$$
+\hat{\beta}_0 = \bar{y} -\hat{\beta}_1\bar{x}
+$$
+
+y
+
+$$
+\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum_{i=1}^{n} (x_i - \bar{x})y_i }{\sum_{i=1}^n (x_i-\bar{x})^2}
+$$
+
+de este modo tenemos el modelo $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$. Por lo tanto el modelo ajustado se calculó en el ejercicio 2.1 de la siguiente manera:
+
+```{r}
+x = tableB1[,10] # x_8
+y = tableB1[,2] # y
+meanx = mean(x)
+meany = mean(y)
+Sxy = sum(((x-meanx))*y)
+Sxx = sum(((x-meanx)^2))
+beta1 = Sxy/Sxx
+beta0 = meany - beta1*meanx
+```
+
+donde la estimación puntual de los juegos ganados viene dada por $\hat{y}_0 = \hat{\beta_0} + \hat{\beta_1}x_0$
+
+```{r}
+x_0 = 1800
+
+y_0 = beta0 + beta1*x_0
+y_0
+```
+
+***Por lo tanto se espera, segun el modelo, que un equipo que restringe el avance de yardas del equipo contrario a $x_0=1800$ según el modelo de regresión gane $9.14$ partidos.*** 
+
+Ahora para construir un intervalo de predicción tengamos en cuenta la variable aleatoria
+
+$$
+\psi = y_0 - \hat{y}_0
+$$
+
+donde $y_0 = \beta_0 + \beta_1 x_0$ y $\hat{y}_0 = \hat{\beta_0} + \hat{\beta_1}x_0$. Como son combinaciones lineales de distribuciones normales vemos que $\psi$ tiene distribución normal de media cero y varianza
+
+$$
+\operatorname{Var}(\psi)=\operatorname{Var}\left(y_{0}-\hat{y}_{0}\right)=\sigma^{2}\left[1+\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right]
+$$
+
+dado que $y_0$ y $\hat{y}_0$ son independientes. De este modo tenemos que la desviación estándar estimada es la estadística apropiada y así el intervalo de predicción es
+
+$$
+\begin{split}
+\hat{y}_{0}-t_{\alpha / 2, n-2} \sqrt{M S_{\operatorname{Res}}\left(1+\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\leq \\ y_{0} \leq \\ \hat{y}_{0}+t_{\alpha / 2, n-2} \sqrt{M S_{\mathrm{Res}}\left(1+\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\end{split}
+$$
+
+entonces tenemos que 
+
+```{r}
+alpha = 0.1
+x0=1800
+
+SS_T = sum((y^2))-(((sum(y))^2)/length(x)) # Suma de cuadrados de las observaciones corregidas
+SS_Res = SS_T - (beta1*Sxy) # Suma de cuadrados de los residuales
+SS_R = beta1*Sxy # Suma de cuadrados de la regresion o suma de cuadrados del modelo
+
+df_T = length(x) -1 # Grados de libertad de las observaciones corregidas
+df_Res = length(x) - 2 # Grados de libertad de la suma de cuadrados de los residuales
+df_R = 1 # Grados de libertad de la suma de cuadrados de la regresión
+
+
+MS_Res = SS_Res/df_Res
+MS_R = SS_R/df_R
+MS_Res = SS_Res/df_Res
+
+y0 = beta0 + beta1*x0
+se_y0 = sqrt( MS_Res*(1 + (1/length(x)) + ((x0-meanx)^2)/Sxx ) ) # desviación de \hat{y}_0
+
+IC_y0_inf = y0 - qt((1-alpha/2),df=(length(x)-2))*se_y0
+IC_y0_sup = y0 + qt((1-alpha/2),df=(length(x)-2))*se_y0
+IC_y0 = c(IC_y0_inf,IC_y0_sup)
+IC_y0
+```
+
+***Por lo tanto un intervalo de confianza del $90\%$ de predicción de numero de juegos ganados si se restringe el avance de yardas del equipo contrario a $x_0 = 1800$ es de $(4.936392 13.349749)$***
+
+### **Ejercicio 2.4**
+
+La tabla B.3 del apéndice contiene datos sobre el rendimiento de la gasolina, en millas, de 32 automóviles diferentes. 
+
+```{r}
+tableB3 <- read.csv("C:/Users/nico9/Documents/Notebooks/Analisis de regresion/r/LinearModels/tableB3.csv",sep = ";",dec = ",")
+head(tableB3)
+```
+
+$$
+\begin{array}{ll}
+y: \text { Miles/gallon } & x_{6}: \text { Carburetor (barrels) } \\
+x_{1}: \text { Displacement (cubic in.) } & x_{7}: \text { No. of transmission speeds } \\
+x_{2}: \text { Horsepower (ft-lb) } & x_{8}: \text { Overall length (in.) } \\
+x_{3}: \text { Torqne (ft-lb) } & x_{9}: \text { Width (in.) } \\
+x_{4}: \text { Compression ratio } & x_{10}: \text { Weight (lb) } \\
+x_{5}: \text { Rear axle ratio } & x_{11} \text { : Type of transmission (A automatic; M manual) } \\
+\text { Source: Motor Trend, 1975. } &
+\end{array}
+$$
+
+a. Ajustar un modelo de regresión lineal simple que relacione el rendimiento de la gasolina y (millas por galón) y la cilindrada del motor $x_1$ (pulgadas cúbicas).
+
+***Solución:***
+
+Vamos a hacer uso del método de los mínimos cuadrados para ajustar un modelo de regresión lineal simple. Teniendo en cuenta los estimadores insesgados de los parámetros $\beta_0$ y $\beta_1$ del modelo $y=\beta_0 + \beta_1 x$ que son 
+
+$$
+\hat{\beta}_0 = \bar{y} -\hat{\beta}_1\bar{x}
+$$
+
+y
+
+$$
+\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum_{i=1}^{n} (x_i - \bar{x})y_i }{\sum_{i=1}^n (x_i-\bar{x})^2}
+$$
+
+tenemos el modelo $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$. Por lo tanto el modelo ajustado se calcula de la siguiente manera:
+
+```{r}
+x = tableB3[,3]
+y = tableB3[,2]
+meanx = mean(x) 
+meany = mean(y)
+Sxy = sum(((x-meanx))*y)
+Sxx = sum(((x-meanx)^2))
+beta1 = Sxy/Sxx
+beta0 = meany - beta1*meanx
+
+plot(x,y)
+abline(a=beta0,b=beta1) # Los parametros son el intercepto y la pendiente que calculamos
+```
+
+b. Formar la tabla de análisis de varianza y prueba de significancia de la regresión.
+
+***Solución:***
+
+- *Anova*
+
+Para desarrollar el análisis de varianza tengamos en cuenta la identidad fundamental del análisis de varianza para el modelo de regresión que nos dice
+
+$$
+\begin{split}
+\sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2} 
+& =\sum_{i=1}^{n}\left(\hat{y}_{i}-\bar{y}\right)^{2} + \sum_{i=1}^{n}\left(y_{i}-\hat{y}_{i}\right)^{2} \\
+SS_T & = SS_R + SS_{\text{Res}}
+\end{split}
+$$
+
+donde al lado izquierdo tenemos la suma de los cuadrados de las observaciones corregidas ($SS_T$) y al derecho la suma de cuadrados del modelo ($SS_R$) mas la suma del cuadrado de los residuales ($SS_{\text{Res}}$). 
+
+También tenemos que los grados de libertad correspondientes vienen dados de la siguiente manera
+
+$$
+\begin{split}
+d f_{\mathrm{T}} &=d f_{\mathrm{R}}+d f_{\mathrm{Res}} \\
+n-1 &=1+(n-2)
+\end{split}
+$$
+
+dado que para $SS_T$ se pierde un grado de libertad al ajustar de la forma $\sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)$ en las desviaciones $\left(y_{i}-\bar{y}\right)$; $SS_T$ está determinado por un único parámetro ($\hat{\beta}_1$ en $SS_R = \hat{\beta}_1S_{xy}$), y $SS_{\text{Res}}$ tiene dos grados de libertad menos dado que al ajustar $\sum_{i=1}^{n}\left(y_{i}-\hat{y}_{i}\right)$ se pierden dos grados de libertad dado que las desviaciones $\left(y_{i}-\hat{y}_{i}\right)$ son resultado de estimar $\hat{\beta}_0$ y $\hat{\beta}_1$
+
+De este modo al hacer el análisis de variancia con la hipótesis nula $H_0=\beta_1=0$ tenemos que el estadístico de prueba es
+
+$$
+F_0 = \frac{SS_R/df_R}{SS_{\text{Res}/df_{\text{Res}}}} = \frac{SS_R/1}{SS_{\text{Res}}/(n-2)} = \frac{MS_R}{MS_{\text{Res}}} = \frac{MS_R}{\hat{\sigma}^2} \sim F_{1,n-2}
+$$
+
+dado que $SS_{R} = MS_R/\sigma^2 \sim \chi^2_{1}$ y $SS_{\text{Res}} = MS_{\text{Res}}/\sigma^2 \sim \chi^2_{n-2}$. Donde rechazaremos la hipótesis $H_0=\beta_1=0$ si $F_0 > F_{1-\alpha,1,n-2}$
+
+De este modo tenemos que para un $\alpha = 0.001$ el análisis de la varianza viene dado por el siguiente cálculo
+
+```{r}
+alpha = 0.001
+
+SS_T = sum((y^2))-(((sum(y))^2)/length(x))
+SS_Res = SS_T - (beta1*Sxy)
+MS_Res = SS_Res/(length(x) - 2)
+SS_R = beta1*Sxy
+df_R = 1
+df_Res = length(x) - 2
+df_T = length(x) -1
+MS_R = SS_R/df_R
+MS_Res = SS_Res/df_Res
+F0 = MS_R/MS_Res 
+F0test = qf(1-alpha,df1 = 1,df2 = (length(x)-2))
+pvalue_F0 = 1-pf(F0,df1 = 1,df2 = (length(x)-2))
+
+SS_R
+SS_Res
+SS_T
+df_R
+df_Res
+df_T
+MS_R
+MS_Res
+F0
+F0test
+pvalue_F0
+```
+| Source of Variation | Sum of Squares | Degrees of Freedom | Mean Square | F_(0) |
+| :--- | :--- | :---: | :---: | :---: |
+| Regression | $SS_R$= $\hat{\beta}_1S_{xy}$ | $1$ | $MS_R$ | $MS_R/MS_\text{Res}$ |
+| Residual | $SS_\text{Res}=SS_T- \hat{\beta}_1S_{xy}$ | $n-2$ | $MS_\text{Res}$ |  |
+| Total | $SS_{T}$ | $n-1$ |  |  |
+
+
+| Source of Variation | Sum of Squares | Degrees of Freedom | Mean Square | $F_0$ | $P$ value | 
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| Regression | 955.3404 | 1 | 955.3404 | 101.5586 | 3.820033e-11 |
+| Residual | 282.2037 | 30 | 9.406791 |  |  |
+| Total | 1237.544 | 31 |  |  |  |
+
+***Dado que tenemos que $F_0=101.5586 > F_{1-\alpha,1,n-2}=13.29301$ rechazamos la hipótesis que nos dice que $\beta_1 = 0$ con una significancia del $0.1\%$ y un p valor de $3.820033e^{-11}$***
+
+- *Significancia de la regresión*
+
+Para la significancia de la regresión tengamos en cuenta que como no conocemos la varianza poblacional para el test de hipótesis $H_0 = \beta_1 = \beta_{10} = 0$ tenemos el estadístico de prueba
+
+$$
+t_0 = \frac{\hat{\beta}_1 - \beta_{01}}{\sqrt{MS_{\text{Res}}/S_{xx}}} = \frac{\hat{\beta}_1 - \beta_{01}}{\text{se}(\hat{\beta}_1)} = \frac{\hat{\beta}_1}{\text{se}(\hat{\beta}_1)} \sim t_{n-2}
+$$
+
+dado que $MS_\text{Res}  = \hat{\sigma}^2$ es un estimador insesgado de $\sigma^2$, $(n-2)MS_\text{Res}/\sigma^2 \sim \chi^2_{n-2}$ y $MS_\text{Res}$ con $\hat{\beta}_1$ son independientes. Donde rechazamos la pendiente nula en este caso si $|t_0| > t_{1-\alpha/2,n-2}$.
+
+De este modo tenemos que para un $\alpha = 0.05$ el test de significancia de la regresión viene dado por el siguiente cálculo
+
+```{r}
+alpha = 0.05
+se_beta1 = sqrt(MS_Res/Sxx)
+t0 = (beta1-0)/se_beta1 # el estadístico de prueba preguntando si \hat{\beta}_1 = \beta_{10} = 0
+t0test = qt((1 - alpha/2),df=(length(x)-2)) 
+pvalue_t0 = 2*pt(-abs(t0),df=(length(x)-2))
+
+t0
+t0test
+pvalue_t0
+```
+
+***Dado que tenemos que $|t_0|=10.07763 > t_{1-\alpha/2,n-2}=2.042272$ rechazamos la hipótesis que nos dice que $\beta_1 = 0$ con una significancia del $5\%$ y un p valor de $3.820034e^{-11}$***
+
+Podemos verificar los resultados en $R$ haciendo uso de las funciones `lm()` para crear el objeto correspondiente al modelo lineal, `summary()` para ver la significancia de la regresión y el intercepto y `anova()` para ver el análisis de varianza.
+
+```{r}
+xylm <- lm(y ~ x)
+```
+```{r}
+summary(xylm)
+```
+```{r}
+anova(xylm)
+```
+
+c. ¿Qué porcentaje de la variabilidad total del rendimiento de la gasolina explica la relación lineal con la cilindrada del motor?
+
+***Solución:***
+
+Dado que $SS_T$ es la medida de la variabilidad en $y$ sin considerar el efecto de la variable regresora $x$ y $SS_\text{Res}$ es la medida de la variabilidad sobrante después de considerar la variable regresora $x$ tenemos que el coeficiente de determinación $R^2 = \frac{SS_R}{SS_T} = 1- \frac{SS_\text{Res}}{SS_T}$ es considerado también la proporción de la variación explicada por el regresor $x$. Por lo que tenemos 
+
+```{r}
+R2 = SS_R/SS_T 
+R2
+```
+
+***El $77.19\%$ de la fuerza de la variabilidad se explica en el modelo de regresión***
+
+
+d. Determinar un intervalo de confianza de $95\%$ para el rendimiento promedio de gasolina, si el desplazamiento del motor es $275$ $\text{pulg}^3$.
+
+***Solución:***
+
+Nos piden calcular la respuesta media $E(y)$ de rendimiento promedio de gasolina para un desplazamiento del motor de $x_0=275$ $\text{pulg}^3$. Dado que $x_0$ se encuentra dentro de los valores de desplazamiento de motor que se plantearon el modelo podemos decir que un estimador insesgado de $E(y|x_0)$ es
+
+$$
+\widehat{E\left(y \mid x_{0}\right)}=\hat{\mu}_{y \mid x_{0}}=\hat{\beta}_{0}+\hat{\beta}_{1} x_{0}
+$$
+
+y su varianza es 
+
+$$
+\begin{split}
+\operatorname{Var}\left(\hat{\mu}_{y \mid x_{0}}\right) &=\operatorname{Var}\left(\hat{\beta}_{0}+\hat{\beta}_{1} x_{0}\right)=\operatorname{Var}\left[\bar{y}+\hat{\beta}_{1}\left(x_{0}-\bar{x}\right)\right] \\
+&=\frac{\sigma^{2}}{n}+\frac{\sigma^{2}\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}=\sigma^{2}\left[\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right]
+\end{split}
+$$
+
+Tambien vemos que como $E(y|x) = \hat{\mu}_{y \mid x_{0}}$ es es una combinación lineal de la $y_i$, luego tenemos que 
+
+$$
+\hat{\mu}_{y \mid x_{0}} \sim N\left( \beta_0 + \beta_1 x_0 , \sigma^{2} \left[\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right] \right)
+$$
+
+Ahora para construir un estimador insesgado, como $\text{Cov}(\bar{y},\hat{\beta_1}) = 0$,
+
+$$
+\frac{\hat{\mu}_{y \mid x_{0}}-E\left(y \mid x_{0}\right)}{\sqrt{M S_{\operatorname{Res}}\left(1 / n+\left(x_{0}-\bar{x}\right)^{2} / S_{x x}\right)}} \sim t_{(n-2)}
+$$
+
+lo que nos deja que un intervalos de confianza de $100(1-\alpha)\%$ de la respuesta media en un punto $x=x_0$ es 
+
+$$
+\begin{split}
+\hat{\mu}_{y \mid x_{0}}-t_{\alpha / 2, n-2} \sqrt{M S_{\mathrm{Res}}\left(\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\leq \\ E\left(y \mid x_{0}\right)  \leq \\\hat{\mu}_{y \mid x_{0}}+t_{\alpha / 2, n-2} \sqrt{M S_{\operatorname{Res}}\left(\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\end{split}
+$$
+
+entonces ***el intervalo de confianza del $95\%$ de la respuesta media de rendimiento promedio del motor para un desplazamiento del motor de $275$ $\text{pulg}^3$ es***
+
+```{r}
+x0 = 275
+
+muyx0 = beta0 + beta1*x0
+se_muyx0 = sqrt( MS_Res*( (1/length(x)) + ((x0-meanx)^2)/Sxx ) )
+IC_muyx0_inf = muyx0 - (qt((1-alpha/2),df=(length(x)-2)))*se_muyx0
+IC_muyx0_sup = muyx0 + (qt((1-alpha/2),df=(length(x)-2)))*se_muyx0
+IC_muyx0 = c(IC_muyx0_inf,IC_muyx0_sup )
+IC_muyx0
+```
+
+
+e. Suponer que se desea pronosticar el rendimiento de gasolina que tiene un coche con motor de $275$ $\text{pulg}^3$. Determine un estimado puntual para el rendimiento. Determinar un intervalo de predicción de 95% para el rendimiento.
+
+***Solución:***
+
+La estimación puntual de los juegos ganados viene dada por $\hat{y}_0 = \hat{\beta_0} + \hat{\beta_1}x_0$
+
+```{r}
+x_0 = 275
+
+y_0 = beta0 + beta1*x_0
+y_0
+```
+
+***Por lo tanto se espera que un automóvil con un desplazamiento de cilindraje de $x_0=275$ según el modelo de regresión tenga un rendimiento de gasolina de $20.68466$ *** 
+
+Ahora para construir un intervalo de predicción tengamos en cuenta la variable aleatoria
+
+$$
+\psi = y_0 - \hat{y}_0
+$$
+
+donde $y_0 = \beta_0 + \beta_1 x_0$ y $\hat{y}_0 = \hat{\beta_0} + \hat{\beta_1}x_0$. Como son combinaciones lineales de distribuciones normales vemos que $\psi$ tiene distribución normal de media cero y varianza
+
+$$
+\operatorname{Var}(\psi)=\operatorname{Var}\left(y_{0}-\hat{y}_{0}\right)=\sigma^{2}\left[1+\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right]
+$$
+
+dado que $y_0$ y $\hat{y}_0$ son independientes. De este modo tenemos que la desviación estándar estimada es la estadística apropiada y así el intervalo de predicción es
+
+$$
+\begin{split}
+\hat{y}_{0}-t_{\alpha / 2, n-2} \sqrt{M S_{\operatorname{Res}}\left(1+\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\leq \\ y_{0} \leq \\ \hat{y}_{0}+t_{\alpha / 2, n-2} \sqrt{M S_{\mathrm{Res}}\left(1+\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\end{split}
+$$
+
+entonces tenemos que 
+
+```{r}
+alpha = 0.05
+x0=275
+
+SS_T = sum((y^2))-(((sum(y))^2)/length(x)) # Suma de cuadrados de las observaciones corregidas
+SS_Res = SS_T - (beta1*Sxy) # Suma de cuadrados de los residuales
+SS_R = beta1*Sxy # Suma de cuadrados de la regresion o suma de cuadrados del modelo
+
+df_T = length(x) -1 # Grados de libertad de las observaciones corregidas
+df_Res = length(x) - 2 # Grados de libertad de la suma de cuadrados de los residuales
+df_R = 1 # Grados de libertad de la suma de cuadrados de la regresión
+
+
+MS_Res = SS_Res/df_Res
+MS_R = SS_R/df_R
+MS_Res = SS_Res/df_Res
+
+y0 = beta0 + beta1*x0
+se_y0 = sqrt( MS_Res*(1 + (1/length(x)) + ((x0-meanx)^2)/Sxx ) ) # desviación de \hat{y}_0
+
+IC_y0_inf = y0 - qt((1-alpha/2),df=(length(x)-2))*se_y0
+IC_y0_sup = y0 + qt((1-alpha/2),df=(length(x)-2))*se_y0
+IC_y0 = c(IC_y0_inf,IC_y0_sup)
+IC_y0
+```
+
+***Por lo tanto un intervalo de confianza del $95\%$ de predicción del rendimiento de la gasolina dado una cilindrada de $x_0 = 275$ es de $(14.32311,    27.04622)$***
+
+f. Comparar los dos intervalos obtenidos en las partes d y e. Explicar la diferencia entre ellos. ¿Cuál es más amplio y por qué?
+
+***Solución:***
+
+En cuestiones de amplitud de los intervalos tenemos que
+
+```{r}
+IC_muyx0_sup- IC_muyx0_inf
+```
+```{r}
+IC_y0_sup-IC_y0_inf
+```
+
+esto se debe a que la eficiencia en términos de la amplitud del intervalo es mejor en valores $x_0$ cercanos a $\bar{x}$ que es
+```{r}
+meanx
+```
+
+esta eficiencia puede cambiar a medida que intentemos estimar un intervalo para un valor $x_0$ muy alejado del promedio.
+
+### **Ejercicio 2.6**
+
+La tabla B.4 del apéndice presenta datos de 27 casas vendidas en Erie, Pensilvana. 
+
+```{r}
+tableB4 <- read.csv("C:/Users/nico9/Documents/Notebooks/Analisis de regresion/r/LinearModels/tableB4.csv",sep = ";",dec = ",")
+head(tableB4)
+```
+
+y: Sale price of the house/1000
+
+x1: Taxes (local, school, county)/1000
+
+x2: Number of baths
+
+x3: Lot size (sq ft × 1000)
+
+x4: Living space (sq ft × 1000)
+
+x5: Number of garage stalls
+
+x6: Number of rooms
+
+x7: Number of bedrooms
+
+x8: Age of the home (years)
+
+x9: Number of fireplaces
+
+Source: “ Prediction, Linear Regression and Minimum Sum of Relative Errors, ” by S. C. Narula and J. F.
+Wellington, Technometrics, 19, 1977. Also see “ Letter to the Editor, ” Technometrics, 22, 1980.
+
+a. Ajustar un modelo de regresión lineal simple que relacione el precio de venta de la casa con los impuestos actuales ($x_1$).
+
+***Solución:***
+
+Vamos a hacer uso del método de los mínimos cuadrados para ajustar un modelo de regresión lineal simple al precio de las casas explicado por el monto de impuestos actuales. Teniendo en cuenta los estimadores insesgados de los parámetros $\beta_0$ y $\beta_1$ del modelo $y=\beta_0 + \beta_1 x$ que son 
+
+$$
+\hat{\beta}_0 = \bar{y} -\hat{\beta}_1\bar{x}
+$$
+
+y
+
+$$
+\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum_{i=1}^{n} (x_i - \bar{x})y_i }{\sum_{i=1}^n (x_i-\bar{x})^2}
+$$
+
+tenemos el modelo $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$. Por lo tanto el modelo ajustado se calcula de la siguiente manera:
+
+```{r}
+x = tableB4[,2]
+y = tableB4[,1]
+meanx = mean(x)
+meany = mean(y)
+Sxy = sum(((x-meanx))*y)
+Sxx = sum(((x-meanx)^2))
+beta1 = Sxy/Sxx
+beta0 = meany - beta1*meanx
+
+plot(x,y)
+abline(a=beta0,b=beta1) # Los parametros son el intercepto y la pendiente que calculamos
+```
+
+b. Probar la significancia de la regresión.
+
+***Solución:***
+
+Para la significancia de la regresión tengamos en cuenta que, en este caso, no conocemos la varianza poblacional; entonces para el test de hipótesis $H_0 = \beta_1 = \beta_{10} = 0$ tenemos el estadístico de prueba
+
+$$
+t_0 = \frac{\hat{\beta}_1 - \beta_{01}}{\sqrt{MS_{\text{Res}}/S_{xx}}} = \frac{\hat{\beta}_1 - \beta_{01}}{\text{se}(\hat{\beta}_1)} = \frac{\hat{\beta}_1}{\text{se}(\hat{\beta}_1)} \sim t_{n-2}
+$$
+
+dado que $MS_\text{Res}  = \hat{\sigma}^2$ es un estimador insesgado de $\sigma^2$, $(n-2)MS_\text{Res}/\sigma^2 \sim \chi^2_{n-2}$, y $MS_\text{Res}$ con $\hat{\beta}_1$ son independientes. Donde rechazamos la hipótesis, que nos dice que tenemos una pendiente nula en este caso, si $|t_0| > t_{1-\alpha/2,n-2}$.
+
+De este modo tenemos que para un $\alpha = 0.05$ el test de significancia de la regresión viene dado por el siguiente cálculo
+
+```{r}
+alpha = 0.05
+
+SS_T = sum((y^2))-(((sum(y))^2)/length(x)) # Suma de cuadrados de las observaciones corregidas
+SS_Res = SS_T - (beta1*Sxy) # Suma de cuadrados de los residuales
+SS_R = beta1*Sxy # Suma de cuadrados de la regresion o suma de cuadrados del modelo
+
+df_T = length(x) -1 # Grados de libertad de las observaciones corregidas
+df_Res = length(x) - 2 # Grados de libertad de la suma de cuadrados de los residuales
+df_R = 1 # Grados de libertad de la suma de cuadrados de la regresión
+
+MS_Res = SS_Res/df_Res
+MS_R = SS_R/df_R
+
+se_beta1 = sqrt(MS_Res/Sxx)
+
+t0 = (beta1-0)/se_beta1 # el estadístico de prueba preguntando si \hat{\beta}_1 = \beta_{10} = 0
+t0test = qt((1 - alpha/2),df=(length(x)-2)) 
+pvalue_t0 = 2*pt(-abs(t0),df=(length(x)-2))
+
+t0
+t0test
+pvalue_t0
+```
+
+***Dado que tenemos que $|t_0|=8.517998 > t_{1-\alpha/2,n-2}=2.073873$ rechazamos la hipótesis que nos dice que $\beta_1 = 0$ con una significancia del $5\%$ y un p valor de $2.051257e^{-08}$***
+
+Podemos verificar los resultados con la función `lm()` para crear un objeto de modelo lineal y `summary` para ver las diferentes caracteríticas de este
+
+```{r}
+xylm <- lm(y ~ x)
+summary(xylm)
+```
+
+c. ¿Qué porcentaje de la variabilidad total del precio de venta queda explicado con este modelo?
+
+***Solución:***
+
+Dado que $SS_T$ es la medida de la variabilidad en $y$ sin considerar el efecto de la variable regresora $x$ y $SS_\text{Res}$ es la medida de la variabilidad sobrante después de considerar la variable regresora $x$ tenemos que el coeficiente de determinación $R^2 = \frac{SS_R}{SS_T} = 1- \frac{SS_\text{Res}}{SS_T}$ es considerado también la proporción de la variación explicada por el regresor $x$. Por lo que tenemos 
+
+```{r}
+R2 = SS_R/SS_T 
+R2
+```
+
+***El $76.73\%$ de la fuerza de la variabilidad se explica en el modelo de regresión***
+
+d. Determinar un intervalo de confianza de 95% para $\beta_1$
+
+***Solución:***
+
+Teniendo en cuenta que 
+
+$$
+t_0 = \frac{\hat{\beta}_1 - \beta_{01}}{\sqrt{MS_{\text{Res}}/S_{xx}}} = \frac{\hat{\beta}_1 - \beta_{01}}{\text{se}(\hat{\beta}_1)} \sim t_{n-2}
+$$
+
+por lo tanto un intervalo de confianza de $100(1-\alpha)\%$ de la pendiente $\beta_1$ está dado por 
+
+$$
+\hat{\beta}_{1}-t_{\alpha / 2, n-2} \operatorname{se}\left(\hat{\beta}_{1}\right) \leq \hat{\beta}_{1} \leq \hat{\beta}_{1}+t_{\alpha / 2, n-2} \operatorname{se}\left(\hat{\beta}_{1}\right)
+$$
+de este modo tenemos que el intervalo de confianza de $100(1-\alpha)\% = 95\%$ de la pendiente dadas las observaciones es
+
+```{r}
+alpha = 0.05
+se_beta1 = sqrt(MS_Res/Sxx)
+
+IC_beta1_inf = beta1-(qt((1-alpha/2),df=(length(x)-2))*(se_beta1))
+IC_beta1_sup = beta1+(qt((1-alpha/2),df=(length(x)-2))*(se_beta1))
+IC_beta1 = c(IC_beta1_inf,IC_beta1_sup)
+IC_beta1
+```
+
+***Con una confianza del 95% el valor real del parámetro $\beta_1$ se encuentra entre $(-0.009614347 ,-0.004435854)$***
+
+
+e. Determinar un intervalo de confianza de 95% para el precio promedio de venta de una casa, para la cual los impuestos actuales son $\$750$.
+
+***Solución:***
+
+Nos piden calcular la respuesta media $E(y)$ de precio promedio de venta para una casa donde los impuestos actuales son $x_0=750$. Dado que $x_0$ se encuentra dentro de los valores de yardas con los que se planteo el modelo, podemos decir que un estimador insesgado de $E(y|x_0)$ es
+
+$$
+\widehat{E\left(y \mid x_{0}\right)}=\hat{\mu}_{y \mid x_{0}}=\hat{\beta}_{0}+\hat{\beta}_{1} x_{0}
+$$
+
+y su varianza es 
+
+$$
+\begin{split}
+\operatorname{Var}\left(\hat{\mu}_{y \mid x_{0}}\right) &=\operatorname{Var}\left(\hat{\beta}_{0}+\hat{\beta}_{1} x_{0}\right)=\operatorname{Var}\left[\bar{y}+\hat{\beta}_{1}\left(x_{0}-\bar{x}\right)\right] \\
+&=\frac{\sigma^{2}}{n}+\frac{\sigma^{2}\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}=\sigma^{2}\left[\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right]
+\end{split}
+$$
+
+Tambien vemos que como $E(y|x) = \hat{\mu}_{y \mid x_{0}}$ es es una combinación lineal de la $y_i$ tenemos que 
+
+$$\hat{\mu}_{y \mid x_{0}} \sim N\left( \beta_0 + \beta_1 x_0 , \sigma^{2} \left[\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right] \right)$$
+
+Ahora para construir un estimador insesgado como $\text{Cov}(\bar{y},\hat{\beta_1}) = 0$
+
+$$
+\frac{\hat{\mu}_{y \mid x_{0}}-E\left(y \mid x_{0}\right)}{\sqrt{M S_{\operatorname{Res}}\left(1 / n+\left(x_{0}-\bar{x}\right)^{2} / S_{x x}\right)}} \sim t_{(n-2)}
+$$
+
+lo que nos deja que un intervalos de confianza de $100(1-\alpha)\%$ de la respuesta media en un punto $x=x_0$ es 
+
+$$
+\begin{split}
+\hat{\mu}_{y \mid x_{0}}-t_{\alpha / 2, n-2} \sqrt{M S_{\mathrm{Res}}\left(\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\leq \\ E\left(y \mid x_{0}\right)  \leq \\\hat{\mu}_{y \mid x_{0}}+t_{\alpha / 2, n-2} \sqrt{M S_{\operatorname{Res}}\left(\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\end{split}
+$$
+
+entonces ***el intervalo de confianza del $95\%$ de la respuesta media del valor de una casa la cual paga actualmente un total de $\$750$ en impuestos es***
+
+```{r}
+x0 = 0.750 # Los precios reales estan divididos por 1000
+
+muyx0 = beta0 + beta1*x0
+se_muyx0 = sqrt( MS_Res*( (1/length(x)) + ((x0-meanx)^2)/Sxx ) )
+IC_muyx0_inf = muyx0 - (qt((1-alpha/2),df=(length(x)-2)))*se_muyx0
+IC_muyx0_sup = muyx0 + (qt((1-alpha/2),df=(length(x)-2)))*se_muyx0
+IC_muyx0 = c(IC_muyx0_inf,IC_muyx0_sup )
+IC_muyx0
+```
+
+> *Nota: Tengamos en cuenta que la mínima observación con la cual se hizo el modelo es $x_{(1) = 3.891}$ es decir que este modelo es apropiado para estimar valores promedio de venta de las casas siempre y cuando los valores $x_0$ se encuentren entre el mínimo y el máximo de la muestra.*
+
+### **Ejercicio 2.8**
+Para los datos de la planta de oxígeno en el problema 2.7, suponer que la pureza y el porcentaje de hidrocarburos son variables aleatorias con distribución normal conjunta.
+
+```{r}
+x<-c(1.02,	1.11,	1.43,	1.11,	1.01,	0.95,	1.11,	0.87,	1.43,	1.02,	1.46,	1.55,	1.55,	1.55,	1.40,	1.15,	1.01,	0.99,	0.95,	0.98)
+
+y<-c(86.91,	89.85,	90.28,	86.34,	92.58,	87.33,	86.29,	91.86,	95.61,	89.86,	96.73,	99.42,	98.66,	96.07,	93.65,	87.31,	95.00,	96.85,	85.20,	90.56)
+
+meanx = mean(x)
+meany = mean(y)
+
+Sxy = sum(((x-meanx))*y)
+Sxx = sum(((x-meanx)^2))
+
+beta1 = Sxy/Sxx # Pendiente
+beta0 = meany - beta1*meanx #intersepto
+
+SS_T = sum((y^2))-(((sum(y))^2)/length(x)) # Suma de cuadrados de las observaciones corregidas
+SS_Res = SS_T - (beta1*Sxy) # Suma de cuadrados de los residuales
+SS_R = beta1*Sxy # Suma de cuadrados de la regresion o suma de cuadrados del modelo
+
+df_T = length(x) -1 # Grados de libertad de las observaciones corregidas
+df_Res = length(x) - 2 # Grados de libertad de la suma de cuadrados de los residuales
+df_R = 1 # Grados de libertad de la suma de cuadrados de la regresión
+
+
+MS_Res = SS_Res/df_Res
+MS_R = SS_R/df_R
+MS_Res = SS_Res/df_Res
+```
+
+a. ¿Cuál es la correlación entre la pureza del oxígeno y el porcentaje de hidrocarburos?
+
+***Solución:***
+
+Teniendo en cuenta que el estimador de la correlación dada una muestra que es 
+
+$$
+r=\frac{\sum_{i=1}^{n} y_{i}\left(x_{i}-\bar{x}\right)}{\left[\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2} \sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2}\right]^{1 / 2}}=\frac{S_{x y}}{\left[S_{x x} S S_{\mathrm{T}}\right]^{1 / 2}}
+$$
+
+tenemos que para el ejemplo anterior
+
+```{r}
+r = Sxy/((Sxx*SS_T)^(1/2))
+r
+```
+
+b. Probar la hipótesis que $\rho = 0$.
+
+***Solución:***
+
+Teniendo en cuenta el estadístico de prueba 
+
+$$
+t_{0}=\frac{r \sqrt{n-2}}{\sqrt{1-r^{2}}} \sim t_{(n-2)}
+$$
+
+donde rechazamos la hipótesis de correlación nula si $|t_0| > t_{\alpha/2,n-2}$. De este modo
+
+```{r}
+alpha = 0.05
+t0 = r*(df_Res^(1/2))/((1-(r^2))^(1/2))
+t0test = qt(1-alpha/2,df=df_Res)
+pvalue = 2*pt(-abs(t0),df=df_Res)
+
+t0
+t0test
+pvalue
+```
+
+***Dado que tenemos que $|t_0|=3.386119 > t_{1-\alpha/2,n-2}=2.100922$ rechazamos la hipótesis que nos dice que $\rho = 0$ con una significancia del $5\%$ y un p valor de $0.003291122$***
+
+c. Establecer un intervalo de confianza de 95% para $\rho = 0$.
+
+***Solución:***
+
+Para construir un intervalo de confianza veamos que 
+
+$$
+\tanh \left(\operatorname{arctanh} r-\frac{Z_{\alpha / 2}}{\sqrt{n-3}}\right) \leq \rho \leq \tanh \left(\operatorname{arctanh} r+\frac{Z_{\alpha / 2}}{\sqrt{n-3}}\right)
+$$
+
+de este modo un intervalo de confianza del $95\%$ para $\rho$
+
+```{r}
+IC_rho_inf = tanh( atanh(r) - (qnorm( 1-alpha/2 )/((length( x )-3)^(1/2))) )
+IC_rho_sup = tanh( atanh(r) + (qnorm( 1-alpha/2 )/((length( x )-3)^(1/2))) )
+IC_rho = c(IC_rho_inf,IC_rho_sup)
+IC_rho
+```
+
+### **Ejercicio 2.10**
+
+A continuación se muestran el peso y la presión sistólica sanguínea de 26 hombres seleccionados al azar, en el grupo de edades de 25 a 30. Suponer que el peso y la presión sanguínea (BP) tienen distribución normal conjunta.
+
+```{r}
+x<-c(130,	133,	150,	128,	151,	146,	150,	140,	148,	125,	133,	135,	150,	153,	128,	132,	149,	158,	150,	163,	156,	124,	170,	165,	160,	159)
+y<-c(165,	167,	180,	155,	212,	175,	190,	210,	200,	149,	158,	169,	170,	172,	159,	168,	174,	183,	215,	195,	180,	143,	240,	235,	192,	187)
+```
+
+
+a. Determine una recta de regresión que relacione la presión sistólica sanguínea con el peso.
+
+***Solución:***
+
+Vamos a hacer uso del método de los mínimos cuadrados para ajustar un modelo de regresión lineal simple. Teniendo en cuenta los estimadores insesgados de los parámetros $\beta_0$ y $\beta_1$ del modelo poblacional $y=\beta_0 + \beta_1 x$ que son 
+
+$$
+\hat{\beta}_0 = \bar{y} -\hat{\beta}_1\bar{x}
+$$
+
+y
+
+$$
+\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum_{i=1}^{n} (x_i - \bar{x})y_i }{\sum_{i=1}^n (x_i-\bar{x})^2}
+$$
+
+tenemos el modelo $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$. Por lo tanto el modelo ajustado se calcula de la siguiente manera:
+
+```{r}
+meanx = mean(x)
+meany = mean(y)
+Sxy = sum(((x-meanx))*y)
+Sxx = sum(((x-meanx)^2))
+beta1 = Sxy/Sxx
+beta0 = meany - beta1*meanx
+
+SS_T = sum((y^2))-(((sum(y))^2)/length(x)) # Suma de cuadrados de las observaciones corregidas
+SS_Res = SS_T - (beta1*Sxy) # Suma de cuadrados de los residuales
+SS_R = beta1*Sxy # Suma de cuadrados de la regresion o suma de cuadrados del modelo
+
+df_T = length(x) -1 # Grados de libertad de las observaciones corregidas
+df_Res = length(x) - 2 # Grados de libertad de la suma de cuadrados de los residuales
+df_R = 1 # Grados de libertad de la suma de cuadrados de la regresión
+
+
+MS_Res = SS_Res/df_Res
+MS_R = SS_R/df_R
+MS_Res = SS_Res/df_Res
+
+plot(x,y)
+abline(a=beta0,b=beta1) # Los parametros son el intercepto y la pendiente que calculamos
+```
+
+b. Estimar el coeficiente de correlación.
+
+***Solución:***
+
+Teniendo en cuenta que el estimador de la correlación dada una muestra que es 
+
+$$
+r=\frac{\sum_{i=1}^{n} y_{i}\left(x_{i}-\bar{x}\right)}{\left[\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2} \sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2}\right]^{1 / 2}}=\frac{S_{x y}}{\left[S_{x x} S S_{\mathrm{T}}\right]^{1 / 2}}
+$$
+
+tenemos que para ver la correlación entre el peso de una persona y la presión sistólica según la muestra suministrada es
+
+```{r}
+r = Sxy/((Sxx*SS_T)^(1/2))
+r
+```
+
+
+
+c. Probar la hipótesis que $\rho = 0$.
+ 
+***Solución:***
+
+Teniendo en cuenta el estadístico de prueba 
+
+$$
+t_{0}=\frac{r \sqrt{n-2}}{\sqrt{1-r^{2}}} \sim t_{(n-2)}
+$$
+
+donde rechazamos la hipótesis de correlación nula si $|t_0| > t_{\alpha/2,n-2}$. De este modo
+
+```{r}
+alpha = 0.05
+t0 = r*(df_Res^(1/2))/((1-(r^2))^(1/2))
+t0test = qt(1-alpha/2,df=df_Res)
+pvalue = 2*pt(-abs(t0),df=df_Res)
+
+t0
+t0test
+pvalue
+```
+
+***Dado que tenemos que $|t_0|=5.978644 > t_{1-\alpha/2,n-2}=2.063899$ rechazamos la hipótesis que nos dice que $\rho = 0$ con una significancia del $5\%$ y un p valor de $3.591105e^{-06}$***
+
+d. Probar la hipótesis que $\rho = 0.6$.
+
+***Solución:***
+
+Para un test $H_0: \rho = \rho_0$ contra $H_1: \rho \neq \rho_0$ donde para $n\geq 25$ tenemos que la estadística 
+
+$$
+Z=\operatorname{arctanh} r=\frac{1}{2} \ln \frac{1+r}{1-r}
+$$
+
+tiene aproximadamente distribución normal con media 
+
+$$
+\mu_{Z}=\operatorname{arctanh} \rho=\frac{1}{2} \ln \frac{1+\rho}{1-\rho}
+$$
+
+y varianza 
+
+$$
+\sigma_{Z}^{2}=(n-3)^{-1}
+$$
+
+por lo tanto para verificar la hipótesis $H_0: \rho = \rho_0$ tenemos que calcular la estadítica
+
+$$
+Z_{0}=\left(\operatorname{arctanh} r-\operatorname{arctanh} \rho_{0}\right)(n-3)^{1 / 2}
+$$
+
+donde debemos rechazar $H_0 : \rho = \rho_0$ si $|Z_0| > Z_{1-\alpha/2}$. De este modo para ver si la correlación entre el peso de una persona y su presión sistólica es $H_0 : \rho = 0.6$ tenemos
+
+```{r}
+p0 = 0.6
+alpha = 0.05
+
+Z0 = (atanh(r) - atanh(p0))*((length(x)-3)^(1/2))
+Z0test = qnorm(1-alpha/2)
+pvalue_Z0 = 2*pnorm(-abs(Z0))
+
+Z0
+Z0test
+pvalue_Z0
+```
+
+***Dado que NO tenemos que $|Z_0|=1.610495 > Z_{1-\alpha/2}=1.959964$ fallamos al rechazar la hipótesis que nos dice que $\rho = 0.6$ con una significancia del $5\%$ y un p valor de $0.1072899$***
+
+e. Determinar un coeficiente de confianza de 95% para $\rho$.
+
+***Solución:***
+
+Para construir un intervalo de confianza veamos que 
+
+$$
+\tanh \left(\operatorname{arctanh} r-\frac{Z_{\alpha / 2}}{\sqrt{n-3}}\right) \leq \rho \leq \tanh \left(\operatorname{arctanh} r+\frac{Z_{\alpha / 2}}{\sqrt{n-3}}\right)
+$$
+
+de este modo un intervalo de confianza del $95\%$ para $\rho$
+
+```{r}
+IC_rho_inf = tanh( atanh(r) - (qnorm( 1-alpha/2 )/((length( x )-3)^(1/2))) )
+IC_rho_sup = tanh( atanh(r) + (qnorm( 1-alpha/2 )/((length( x )-3)^(1/2))) )
+IC_rho = c(IC_rho_inf,IC_rho_sup)
+IC_rho
+```
+
+### **Ejercicio 2.12**
+
+Se cree que la cantidad de libras de vapor usadas en una planta por mes está relacionada con la temperatura ambiente promedio. A continuación se presentan los consumos y las temperaturas del último año.
+
+```{r}
+y<-c(185.79,214.47,288.03,424.84,454.68,539.03,621.55,675.06,562.03,452.93,369.95,273.98)
+x<-c(21,24,32,47,50,59,68,74,62,50,41,30)
+x
+y
+```
+
+a. Ajustar un modelo de regresión lineal simple a los datos.
+
+***Solución:***
+
+Vamos a hacer uso del método de los mínimos cuadrados para ajustar un modelo de regresión lineal simple. Teniendo en cuenta los estimadores insesgados de los parámetros $\beta_0$ y $\beta_1$ del modelo $y=\beta_0 + \beta_1 x$ que son 
+
+$$
+\hat{\beta}_0 = \bar{y} -\hat{\beta}_1\bar{x}
+$$
+
+y
+
+$$
+\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum_{i=1}^{n} (x_i - \bar{x})y_i }{\sum_{i=1}^n (x_i-\bar{x})^2}
+$$
+
+tenemos el modelo $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$. Por lo tanto el modelo ajustado se calcula de la siguiente manera:
+
+```{r}
+meanx = mean(x)
+meany = mean(y)
+Sxy = sum(((x-meanx))*y)
+Sxx = sum(((x-meanx)^2))
+beta1 = Sxy/Sxx
+beta0 = meany - beta1*meanx
+
+plot(x,y)
+abline(a=beta0,b=beta1) # Los parametros son el intercepto y la pendiente que calculamos
+```
+
+b. Probar la significancia de la regresión.
+
+***Solución:***
+
+Vamos a desarrollar un análisis de varianza. Tengamos en cuenta la identidad fundamental del análisis de varianza para el modelo de regresión que nos dice
+
+$$
+\begin{split}
+\sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2} 
+& =\sum_{i=1}^{n}\left(\hat{y}_{i}-\bar{y}\right)^{2} + \sum_{i=1}^{n}\left(y_{i}-\hat{y}_{i}\right)^{2} \\
+SS_T & = SS_R + SS_{\text{Res}}
+\end{split}
+$$
+
+donde al lado izquierdo tenemos la suma de los cuadrados de las observaciones corregidas ($SS_T$) y al derecho la suma de cuadrados del modelo ($SS_R$) mas la suma del cuadrado de los residuales ($SS_{\text{Res}}$). 
+
+También tenemos que los grados de libertad correspondientes vienen dados de la siguiente manera
+
+$$
+\begin{split}
+d f_{\mathrm{T}} &=d f_{\mathrm{R}}+d f_{\mathrm{Res}} \\
+n-1 &=1+(n-2)
+\end{split}
+$$
+
+dado que para $SS_T$ se pierde un grado de libertad al ajustar de la forma $\sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)$ en las desviaciones $\left(y_{i}-\bar{y}\right)$, $SS_T$ está determinado por un único parámetro ($\hat{\beta}_1$ en $SS_R = \hat{\beta}_1S_{xy}$), y $SS_{\text{Res}}$ tiene dos grados de libertad menos dado que al ajustar $\sum_{i=1}^{n}\left(y_{i}-\hat{y}_{i}\right)$ se pierden dos grados de libertad dado que las desviaciones $\left(y_{i}-\hat{y}_{i}\right)$ son resultado de estimar $\hat{\beta}_0$ y $\hat{\beta}_1$
+
+De este modo al hacer el análisis de varianza con la hipótesis nula $H_0=\beta_1=0$ tenemos que el estadístico de prueba es
+
+$$
+F_0 = \frac{SS_R/df_R}{SS_{\text{Res}/df_{\text{Res}}}} = \frac{SS_R/1}{SS_{\text{Res}}/(n-2)} = \frac{MS_R}{MS_{\text{Res}}} = \frac{MS_R}{\hat{\sigma}^2} \sim F_{1,n-2}
+$$
+
+dado que $SS_{R} = MS_R/\sigma^2 \sim \chi^2_{1}$ y $SS_{\text{Res}} = MS_{\text{Res}}/\sigma^2 \sim \chi^2_{n-2}$. Donde rechazaremos la hipótesis $H_0=\beta_1=0$ si $F_0 > F_{1-\alpha,1,n-2}$
+
+Tenemos que para un $\alpha = 0.001$ el análisis de la varianza viene dado por el siguiente cálculo
+
+```{r}
+alpha = 0.001
+
+SS_T = sum((y^2))-(((sum(y))^2)/length(x)) # Suma de cuadrados de las observaciones corregidas
+SS_Res = SS_T - (beta1*Sxy) # Suma de cuadrados de los residuales
+SS_R = beta1*Sxy # Suma de cuadrados de la regresion o suma de cuadrados del modelo
+
+df_T = length(x) -1 # Grados de libertad de las observaciones corregidas
+df_Res = length(x) - 2 # Grados de libertad de la suma de cuadrados de los residuales
+df_R = 1 # Grados de libertad de la suma de cuadrados de la regresión
+
+MS_Res = SS_Res/df_Res
+MS_R = SS_R/df_R
+
+F0 = MS_R/MS_Res 
+F0test = qf(1-alpha,df1 = 1,df2 = (length(x)-2))
+pvalue_F0 = 1-pf(F0,df1 = 1,df2 = (length(x)-2))
+
+SS_R
+SS_Res
+SS_T
+df_R
+df_Res
+df_T
+MS_R
+MS_Res
+F0
+F0test
+pvalue_F0
+```
+| Source of Variation | Sum of Squares | Degrees of Freedom | Mean Square | F_(0) |
+| :--- | :--- | :---: | :---: | :---: |
+| Regression | $SS_R$= $\hat{\beta}_1S_{xy}$ | $1$ | $MS_R$ | $MS_R/MS_\text{Res}$ |
+| Residual | $SS_\text{Res}=SS_T- \hat{\beta}_1S_{xy}$ | $n-2$ | $MS_\text{Res}$ |  |
+| Total | $SS_{T}$ | $n-1$ |  |  |
+
+
+| Source of Variation | Sum of Squares | Degrees of Freedom | Mean Square | $F_0$ | $P$ value | 
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| Regression | 280589.6 | 1 | 280589.6 | 74122.78 | 0 |
+| Residual | 37.8547 | 10 | 3.78547 |  |  |
+| Total | 280627.4 | 11 |  |  |  |
+
+```{r}
+xylm = lm(y ~ x)
+anova(xylm)
+```
+
+***Dado que tenemos que $F_0=74122.78 > F_{1-\alpha,1,n-2}=21.0396$ rechazamos la hipótesis que nos dice que $\beta_1 = 0$ con una significancia del $0.1\%$ y un p valor de $0$***
+
+c. En la administración de la planta se cree que un aumento de 1 grado en la temperatura ambiente promedio hace aumentar 10 000 libras el consumo mensual de vapor. ¿Estos datos respaldan la afirmación?
+
+***Solución:***
+
+Vamos a hacer una verificación de hipótesis donde $H_0 : \beta_1 = 10$ y $H_1 : \beta_1 \neq 10$ dado que la variable respuesta está sobre $1000$. Ahora, teniendo en cuenta que, en este caso, no conocemos la varianza poblacional; entonces para el test de hipótesis $H_0 : \beta_1 = \beta_{10} = 10$ tenemos el estadístico de prueba
+
+$$
+t_0 = \frac{\hat{\beta}_1 - \beta_{01}}{\sqrt{MS_{\text{Res}}/S_{xx}}} = \frac{\hat{\beta}_1 - \beta_{01}}{\text{se}(\hat{\beta}_1)} = \frac{\hat{\beta}_1-10}{\text{se}(\hat{\beta}_1)} \sim t_{n-2}
+$$
+
+dado que $MS_\text{Res}  = \hat{\sigma}^2$ es un estimador insesgado de $\sigma^2$, $(n-2)MS_\text{Res}/\sigma^2 \sim \chi^2_{n-2}$, y $MS_\text{Res}$ con $\hat{\beta}_1$ son independientes. Donde rechazamos la hipótesis, que nos dice que tenemos una pendiente de $10$, si $|t_0| > t_{1-\alpha/2,n-2}$.
+
+De este modo tenemos que para un $\alpha = 0.05$ el test sobre la pendiente viene dado por el siguiente cálculo
+
+```{r}
+alpha = 0.05
+se_beta1 = sqrt(MS_Res/Sxx)
+t0 = (beta1-10)/se_beta1 # el estadístico de prueba preguntando si \hat{\beta}_1 = \beta_{10} = 0
+t0test = qt((1 - alpha/2),df=(length(x)-2)) 
+pvalue_t0 = 2*pt(-abs(t0),df=(length(x)-2))
+
+t0
+t0test
+pvalue_t0
+```
+
+***Dado que tenemos que $|t_0|=23.40222 > t_{1-\alpha/2,n-2}=2.228139$ rechazamos la hipótesis que nos dice que $\beta_1 = 10$ con una significancia del $5\%$ y un p valor de $4.597358e^{-10}$***
+
+
+d. Determinar un intervalo de predicción de 99% para el uso de vapor en un mes con temperatura ambiente promedio de 58°.
+
+***Solución:***
+
+Para construir un intervalo de predicción tengamos en cuenta la variable aleatoria
+
+$$
+\psi = y_0 - \hat{y}_0
+$$
+
+donde $y_0 = \beta_0 + \beta_1 x_0$ y $\hat{y}_0 = \hat{\beta_0} + \hat{\beta_1}x_0$. Como son combinaciones lineales de distribuciones normales vemos que $\psi$ tiene distribución normal de media cero y varianza
+
+$$
+\operatorname{Var}(\psi)=\operatorname{Var}\left(y_{0}-\hat{y}_{0}\right)=\sigma^{2}\left[1+\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right]
+$$
+
+dado que $y_0$ y $\hat{y}_0$ son independientes. De este modo tenemos que la desviación estándar estimada es la estadística apropiada y así el intervalo de predicción es
+
+$$
+\begin{split}
+\hat{y}_{0}-t_{\alpha / 2, n-2} \sqrt{M S_{\operatorname{Res}}\left(1+\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\leq \\ y_{0} \leq \\ \hat{y}_{0}+t_{\alpha / 2, n-2} \sqrt{M S_{\mathrm{Res}}\left(1+\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\end{split}
+$$
+
+entonces tenemos que 
+
+```{r}
+alpha = 0.01
+x0=58
+
+y0 = beta0 + beta1*x0
+se_y0 = sqrt( MS_Res*(1 + (1/length(x)) + ((x0-meanx)^2)/Sxx ) ) # desviación de \hat{y}_0
+
+IC_y0_inf = y0 - qt((1-alpha/2),df=(length(x)-2))*se_y0
+IC_y0_sup = y0 + qt((1-alpha/2),df=(length(x)-2))*se_y0
+IC_y0 = c(IC_y0_inf,IC_y0_sup)
+IC_y0
+```
+
+### **Ejercicio 2.14**
+
+Hsuie, Ma y Tsai (“Separación y caracterización de copoliésteres termotrópicos del ácido p-hidroxibenzoico, ácido sebácico e hidroquinona”, Journal of Applied Polymer Science, 56, 471-476, 1995) estudian el efecto de la relación molar del ácido sebácico (el regresor) sobre la viscosidad intrínseca de los copoliésteres (la respuesta). La siguiente tabla muestra los datos. 
+
+```{r}
+x = c(1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3)
+y = c(0.45, 0.20, 0.34, 0.58, 0.70, 0.57, 0.55, 0.44)
+```
+
+a. Trazar un diagrama de dispersión de los datos.
+
+***Solución:***
+Para trazar el diagrama de disperción de los datos vamos a usar la función `plot()` de R
+
+```{r}
+plot(x = x,y = y)
+```
+
+b. Estimar la ecuación de predicción.
+
+***Solución:***
+
+Vamos a hacer uso del método de los mínimos cuadrados para ajustar un modelo de regresión lineal simple. Teniendo en cuenta los estimadores insesgados de los parámetros $\beta_0$ y $\beta_1$ del modelo $y=\beta_0 + \beta_1 x$ que son 
+
+$$
+\hat{\beta}_0 = \bar{y} -\hat{\beta}_1\bar{x}
+$$
+
+y
+
+$$
+\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum_{i=1}^{n} (x_i - \bar{x})y_i }{\sum_{i=1}^n (x_i-\bar{x})^2}
+$$
+
+tenemos el modelo $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$. Por lo tanto el modelo ajustado se calcula de la siguiente manera:
+
+```{r}
+meanx = mean(x)
+meany = mean(y)
+Sxy = sum(((x-meanx))*y)
+Sxx = sum(((x-meanx)^2))
+beta1 = Sxy/Sxx
+beta0 = meany - beta1*meanx
+
+plot(x,y)
+abline(a=beta0,b=beta1) # Los parametros son el intercepto y la pendiente que calculamos
+```
+
+c. Hacer un análisis completo y adecuado (pruebas estadísticas, cálculo de R2,etcétera).
+
+***Solución:***
+
+- *Significancia*
+
+En un principio vamos a hacer una prueba de significancia de la regresión. Para la significancia de la regresión tengamos en cuenta que, en este caso, no conocemos la varianza poblacional; entonces para el test de hipótesis $H_0 = \beta_1 = \beta_{10} = 0$ tenemos el estadístico de prueba
+
+$$
+t_0 = \frac{\hat{\beta}_1 - \beta_{01}}{\sqrt{MS_{\text{Res}}/S_{xx}}} = \frac{\hat{\beta}_1 - \beta_{01}}{\text{se}(\hat{\beta}_1)} = \frac{\hat{\beta}_1}{\text{se}(\hat{\beta}_1)} \sim t_{n-2}
+$$
+
+dado que $MS_\text{Res}  = \hat{\sigma}^2$ es un estimador insesgado de $\sigma^2$, $(n-2)MS_\text{Res}/\sigma^2 \sim \chi^2_{n-2}$, y $MS_\text{Res}$ con $\hat{\beta}_1$ son independientes. Donde rechazamos la hipótesis, que nos dice que tenemos una pendiente nula en este caso, si $|t_0| > t_{1-\alpha/2,n-2}$.
+
+De este modo tenemos que para un $\alpha = 0.05$ el test de significancia de la regresión viene dado por el siguiente cálculo
+
+```{r}
+alpha = 0.05
+
+SS_T = sum((y^2))-(((sum(y))^2)/length(x)) # Suma de cuadrados de las observaciones corregidas
+SS_Res = SS_T - (beta1*Sxy) # Suma de cuadrados de los residuales
+SS_R = beta1*Sxy # Suma de cuadrados de la regresion o suma de cuadrados del modelo
+
+df_T = length(x) -1 # Grados de libertad de las observaciones corregidas
+df_Res = length(x) - 2 # Grados de libertad de la suma de cuadrados de los residuales
+df_R = 1 # Grados de libertad de la suma de cuadrados de la regresión
+
+MS_Res = SS_Res/df_Res
+MS_R = SS_R/df_R
+
+se_beta1 = sqrt(MS_Res/Sxx)
+t0 = (beta1-0)/se_beta1 # el estadístico de prueba preguntando si \hat{\beta}_1 = \beta_{10} = 0
+t0test = qt((1 - alpha/2),df=(length(x)-2)) 
+pvalue_t0 = 2*pt(-abs(t0),df=(length(x)-2))
+
+t0
+t0test
+pvalue_t0
+```
+
+***Dado que NO tenemos que $|t_0|=1.280803 > t_{1-\alpha/2,n-2}=2.446912$ fallaríamos al rechazar la hipótesis que nos dice que $\beta_1 = 0$ con una significancia del $5\%$ y un p valor de $0.2475409$***
+
+- *Varianza explicada por el modelo*
+
+Dado que $SS_T$ es la medida de la variabilidad en $y$ sin considerar el efecto de la variable regresora $x$ y $SS_\text{Res}$ es la medida de la variabilidad sobrante después de considerar la variable regresora $x$ tenemos que el coeficiente de determinación $R^2 = \frac{SS_R}{SS_T} = 1- \frac{SS_\text{Res}}{SS_T}$ es considerado también la proporción de la variación explicada por el regresor $x$. Por lo que tenemos 
+
+```{r}
+R2 = SS_R/SS_T 
+R2
+```
+
+***Es decir que el modelo explica un $21.47\%$ de la variabilidad total en la viscosidad.***
+
+- *Asociación lineal*
+
+Teniendo en cuenta que el estimador de la correlación dada una muestra que es 
+
+$$
+r=\frac{\sum_{i=1}^{n} y_{i}\left(x_{i}-\bar{x}\right)}{\left[\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2} \sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2}\right]^{1 / 2}}=\frac{S_{x y}}{\left[S_{x x} S S_{\mathrm{T}}\right]^{1 / 2}}
+$$
+
+tenemos que
+
+```{r}
+r = Sxy/((Sxx*SS_T)^(1/2))
+r
+```
+
+Ahora para verificar que la hipótesis que $\rho = 0$, teniendo en cuenta el estadístico de prueba 
+
+$$
+t_{0}=\frac{r \sqrt{n-2}}{\sqrt{1-r^{2}}} \sim t_{(n-2)}
+$$
+
+donde rechazamos la hipótesis de correlación nula si $|t_0| > t_{\alpha/2,n-2}$. De este modo
+
+```{r}
+alpha = 0.05
+t0 = r*(df_Res^(1/2))/((1-(r^2))^(1/2))
+t0test = qt(1-alpha/2,df=df_Res)
+pvalue = 2*pt(-abs(t0),df=df_Res)
+
+t0
+t0test
+pvalue
+```
+
+***Dado que NO tenemos que $|t_0|=1.280803 > t_{1-\alpha/2,n-2}=2.446912$ fallariamos al rechazar la hipótesis que nos dice que $\rho = 0$ con una significancia del $5\%$ y un p valor de $0.2475409$***
+
+
+### **Ejercicio 2.16**
+
+Carroll y Spiegelman (“The Effects of Ignoring Small Measurement Errors in Precision Instrument Calibration”, Journal of Quality Technology, 18, 170-173, 1986) examinan la relación entre la presión en un tanque y el volumen de líquido. La siguiente tabla muestra los datos. Use un paquete adecuado de programas estadísticos para efectuar un análisis de ellos. Comente los resultados obtenidos con la rutina del programa. 
+
+***Solución:***
+Vamos a dejar el volumen como la respuesta a la presión. Primero cargamos los datos en R
+
+```{r}
+y = c(2084,	2084,	2273,	2273,	2273,	2463,	2463,	2651,	2652,	2652,	2842,	2842,	3030,	3031,	3031,	3221,	3221,	3409,	3410,	3600,	3600,	3788,	3789,	3789,	3979,	3979, 4167,	4168,	4168,	4358,	4358,	4546,	4547)
+x = c(4599,	4600,	5044,	5043,	5044,	5488,	5487,	5931,	5932,	5932,	6380,	6380,	6818,	6817,	6818,	7266,	7268,	7709,	7710,	8156,	8156,	8597,	8599,	8600,	9048,	9048,	9484,	9487,	9487,	9936,	9938,	10377,	10379)
+```
+
+Ahora vamos a usar la función en R de `lm()` la cual nos crea un objeto de modelo lineal
+
+```{r}
+xylm = lm(y ~x)
+xylm
+```
+
+donde podemos ver que la estimación via mínimos cuadrados nos estima una $\hat{\beta}_0 = 123.8780$ y $\hat{\beta}_1 = 0.4262$. De este modo nuestro modelo queda $\hat{y} = 123.8780 + 0.4262x$ y lo podemos ver gráficamente con el comando `plot()`.
+
+```{r}
+plot(x,y)
+abline(xylm)
+```
+- *Significancia de la regresión*
+
+Podemos ver la significancia de la regresión haciendo uso de la función `summary()` en R la cual describe con más detalle el objeto generado por la función `lm()` o tambien podemos hacer un análisis de varianza con la función `anova()`
+
+```{r}
+summary(xylm)
+anova(xylm)
+F0test = qf(1-0.001,df1 = 1,df2 = (length(x)-2))
+F0test
+```
+
+***Es decir que dado el análisis de varianza dado por la función  tenemos que $F_0=35165232 > F_{1-\alpha,1,n-2}=13.20201$ rechazamos la hipótesis que nos dice que $\beta_1 = 0$ con una significancia del $0.1\%$ y un p valor de $2.2e^{-16}$***
+
+- *Intervalo de confianza del intercepto y la pendiente*
+
+Con el la función `confint()` de r podemos generar un intervalo de confianza para los parámetros del modelo lineal. De este modo para una confianza fija del $99\%$ para ambos parámetros tenemos los intervalos siguientes
+
+```{r}
+confint(xylm,level = 0.99)
+```
+
+- *Predicción de futuras observaciones*
+```{r}
+predict(xylm,interval = "prediction",level = 0.99)
+```
+
+- *Correlación muestral*
+
+```{r}
+cor(x,y)
+```
+
+### **Ejercicio 2.17**
+
+Para el modelo de regresión lineal simple $y = 50 + 10x + \varepsilon$, donde $\varepsilon$  tiene $NID (0, 16)$, suponer que se usan $n = 20$ pares de observaciones para ajustar este modelo. Generar $500$ muestras de $20$ observaciones, tomando una observación para cada valor de $x = 1, 1.5, 2,2.5 . . . , 10$ para cada muestra.
+
+***Solución:***
+Vamos a crear una tabla de $20$ filas por $500$ columnas donde vamos a guardar las observaciones generadas por el modelo 
+
+```{r}
+x = seq(0.5,10,by = 0.5)
+Y = data.frame(x)
+
+length(x) # Se deja desde 0.5 para poder tener 20 muestras pareadas diferentes
+```
+
+Ahora vamos a iterar $500$ veces para conseguir las observaciones asociadas al modelo. Para generar el valor del error usamos la función en R `rnorm()`
+
+```{r}
+k = 500
+
+for (i in 1:k) {
+  e = rnorm(20,mean = 0,sd = sqrt(16))
+  y = 50 + 10*x + e
+  Y[,i+1] = y
+  names(Y)[i+1] = i 
+}
+
+dim(Y)
+```
+
+
+a. Para cada muestra, calcular los estimados de la pendiente y la ordenada al origen por mínimos cuadrado. Trazar histogramas de los valores muéstrales de $\beta_0$ y $\beta_1$. Comentar la forma de esos histogramas.
+
+***Solución:***
+Vamos primero a calcular los valores de la pendiente y la ordenada via mínimos cuadrados
+
+```{r}
+B = c("Beta_0","Beta_1")
+xYlm = data.frame(B)
+
+for (i in 1:k) {
+  lmss = lm(Y[,i+1] ~ Y[,1])
+  xYlm[,i+1] = lmss$coefficients 
+}
+
+dim(xYlm)
+```
+
+ahora generamos con la función `hist()` de R los histogramas correspondientes a los parámetros
+
+```{r}
+beta0 = as.numeric(xYlm[1,2:501])
+beta1 = as.numeric(xYlm[2,2:501])
+hist(x=beta0)
+hist(x=beta1)
+```
+
+***Como deberíamos esperar el los valores mas recurrentes de las estimaciones de los parámetros están entre el valor real de los parámetros dado que los estimadores son insesgados. La varianza de los estimadores son $\operatorname{Var}\left(\hat{\beta}_{0}\right)=\operatorname{Var}(\bar{y})+\bar{x}^{2} \operatorname{Var}\left(\hat{\beta}_{1}\right)=\sigma^{2}\left(\frac{1}{n}+\frac{\bar{x}^{2}}{S_{x x}}\right)$ y $\operatorname{Var}\left(\hat{\beta}_{1}\right)=\sigma^{2} \sum_{i=1}^{n} c_{i}^{2}=\frac{\sigma^{2} \sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}}{S_{x x}^{2}}=\frac{\sigma^{2}}{S_{x x}}$. Además sabemos que tienen distribución normal $\hat{\beta_0}\sim N\left(\beta_{0}, \sigma^{2}\left(\frac{1}{n}+\frac{\bar{x}^{2}}{S_{ xx}}\right)\right.$ y $\hat{\beta_1}\sim N\left(\beta_{1}, \frac{\sigma^{2}}{S_{x x}} \right)$***
+
+b. Para cada muestra, calcular un estimado de $E(y|x = 5)$. Trazar un histograma de los estimados obtenidos. Comentar la forma del histograma.
+
+***Solución:***
+
+```{r}
+x0 = 5
+xY_hat = data.frame(x0)
+
+for (i in 1:k) {
+  xY_hat[,i+1] = xYlm[1,i+1] + xYlm[2,i+1]*x0
+}
+dim(xY_hat)
+
+y_hat = as.numeric(xY_hat[1,2:501])
+hist(y_hat)
+```
+
+***En este caso tambien tenemos que las estimaciones puntuales se concentran más alrrededor del valor real. Tambien la distribución satisface la normalidad esperada de las demsotraciones.***
+
+c. Determinar un intervalo de confianza de 95% para la pendiente en cada muestra. ¿Cuántos de los intervalos contienen el valor verdadero $\beta_1 = 10$? ¿Es lo que se esperaba?
+
+***Solución:***
+
+Teniendo en cuenta que 
+
+$$
+t_0 = \frac{\hat{\beta}_1 - \beta_{01}}{\sqrt{MS_{\text{Res}}/S_{xx}}} = \frac{\hat{\beta}_1 - \beta_{01}}{\text{se}(\hat{\beta}_1)} \sim t_{n-2}
+$$
+
+por lo tanto un intervalo de confianza de $100(1-\alpha)\%$ de la pendiente $\beta_1$ está dado por 
+
+$$
+\hat{\beta}_{1}-t_{\alpha / 2, n-2} \operatorname{se}\left(\hat{\beta}_{1}\right) \leq \hat{\beta}_{1} \leq \hat{\beta}_{1}+t_{\alpha / 2, n-2} \operatorname{se}\left(\hat{\beta}_{1}\right)
+$$
+de este modo tenemos que los intervalos de confianza de $100(1-\alpha)\% = 95\%$ de las pendientes dadas las observaciones generadas son
+
+```{r}
+alpha = 0.05
+
+IC_beta = c("IC_beta1_inf","IC_beta1_sup")
+IC_B = data.frame(IC_beta)
+
+for (i in 1:k) {
+  meanx = mean(x)
+  meany = mean(Y[,i+1])
+  Sxy = sum(((x-meanx))*Y[,i+1])
+  Sxx = sum(((x-meanx)^2))
+  
+  SS_T = sum((Y[,i+1]^2))-(((sum(Y[,i+1]))^2)/length(x))
+  SS_Res = SS_T - (xYlm[2,i+1]*Sxy)
+  SS_R = xYlm[2,i+1]*Sxy
+
+  df_T = length(x) -1
+  df_Res = length(x) - 2
+  df_R = 1
+
+  MS_Res = SS_Res/df_Res
+  MS_R = SS_R/df_R
+  se_beta1 = sqrt(MS_Res/Sxx)
+  
+  IC_B[1,i+1] = xYlm[2,i+1]-(qt((1-alpha/2),df=(length(x)-2))*(se_beta1))
+  IC_B[2,i+1] = xYlm[2,i+1]+(qt((1-alpha/2),df=(length(x)-2))*(se_beta1))
+}
+
+dim(IC_B)
+```
+
+Ahora vamos a sumar el número intervalos que contienen el valor del parámetro y lo dividimos por el número de simulaciones que hicimos.
+
+```{r}
+sum(IC_B[1,2:501] < 10 & IC_B[2,2:501] > 10)/k
+```
+
+que es lo que esperabamos.
+
+d. Para cada estimado de $E(y|x = 5)$ en la parte b, calcular el intervalo de confianza de 95%. ¿Cuántos de esos intervalos contienen el valor verdadero de $E(y|x = 5) = 100$? ¿Es lo que se esperaba?
+
+***Solución:***
+
+Nos piden calcular la respuesta media $E(y)$ de las simulaciones para un número $x_0=100$. Dado que $x_0$ se encuentra dentro de los valores con los que se planteo el modelo, podemos decir que un estimador insesgado de $E(y|x_0)$ es
+
+$$
+\widehat{E\left(y \mid x_{0}\right)}=\hat{\mu}_{y \mid x_{0}}=\hat{\beta}_{0}+\hat{\beta}_{1} x_{0}
+$$
+
+y su varianza es 
+
+$$
+\begin{split}
+\operatorname{Var}\left(\hat{\mu}_{y \mid x_{0}}\right) &=\operatorname{Var}\left(\hat{\beta}_{0}+\hat{\beta}_{1} x_{0}\right)=\operatorname{Var}\left[\bar{y}+\hat{\beta}_{1}\left(x_{0}-\bar{x}\right)\right] \\
+&=\frac{\sigma^{2}}{n}+\frac{\sigma^{2}\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}=\sigma^{2}\left[\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right]
+\end{split}
+$$
+
+Tambien vemos que como $E(y|x) = \hat{\mu}_{y \mid x_{0}}$ es es una combinación lineal de la $y_i$ tenemos que 
+
+$$\hat{\mu}_{y \mid x_{0}} \sim N\left( \beta_0 + \beta_1 x_0 , \sigma^{2} \left[\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right] \right)$$
+
+Ahora para construir un estimador insesgado como $\text{Cov}(\bar{y},\hat{\beta_1}) = 0$
+
+$$
+\frac{\hat{\mu}_{y \mid x_{0}}-E\left(y \mid x_{0}\right)}{\sqrt{M S_{\operatorname{Res}}\left(1 / n+\left(x_{0}-\bar{x}\right)^{2} / S_{x x}\right)}} \sim t_{(n-2)}
+$$
+
+lo que nos deja que un intervalos de confianza de $100(1-\alpha)\%$ de la respuesta media en un punto $x=x_0$ es 
+
+$$
+\begin{split}
+\hat{\mu}_{y \mid x_{0}}-t_{\alpha / 2, n-2} \sqrt{M S_{\mathrm{Res}}\left(\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\leq \\ E\left(y \mid x_{0}\right)  \leq \\\hat{\mu}_{y \mid x_{0}}+t_{\alpha / 2, n-2} \sqrt{M S_{\operatorname{Res}}\left(\frac{1}{n}+\frac{\left(x_{0}-\bar{x}\right)^{2}}{S_{x x}}\right)}
+\end{split}
+$$
+
+entonces ***los intervalos de confianza del $95\%$ de la respuesta media con $x_0 = 100$ son***
+
+
+```{r}
+alpha = 0.05
+x0 = 5
+
+IC_muyx0 = c("IC_muyx0_inf","IC_muyx0_sup")
+IC_muyx0 = data.frame(IC_muyx0)
+
+for (i in 1:k) {
+  meanx = mean(x)
+  meany = mean(Y[,i+1])
+  Sxy = sum(((x-meanx))*Y[,i+1])
+  Sxx = sum(((x-meanx)^2))
+  
+  SS_T = sum((Y[,i+1]^2))-(((sum(Y[,i+1]))^2)/length(x))
+  SS_Res = SS_T - (xYlm[2,i+1]*Sxy)
+  SS_R = xYlm[2,i+1]*Sxy
+
+  df_T = length(x) -1
+  df_Res = length(x) - 2
+  df_R = 1
+
+  MS_Res = SS_Res/df_Res
+  MS_R = SS_R/df_R
+  muyx0 =xYlm[1,i+1] + xYlm[2,i+1]*x0
+  se_muyx0 = sqrt( MS_Res*( (1/length(x)) + ((x0-meanx)^2)/Sxx ) )
+  
+  IC_muyx0[1,i+1] = muyx0 - (qt((1-alpha/2),df=(length(x)-2)))*se_muyx0
+  IC_muyx0[2,i+1] = muyx0 + (qt((1-alpha/2),df=(length(x)-2)))*se_muyx0
+}
+
+dim(IC_muyx0)
+```
+
+Ahora vamos a sumar el número intervalos que contienen el valor esperado y lo dividimos por el número de simulaciones que hicimos.
+
+```{r}
+sum(IC_muyx0[1,2:501] < 100 & IC_muyx0[2,2:501] > 100)/k
+```
+
+que es lo que esperábamos, dado que tenemos que tener en cuenta la aleatoriedad de la generación de los datos. Si hacemos más iteraciones entonces los valores que están contenidos son cada vez mas a la confianza fijada.
+
+### **Ejercicio 2.18**
+
+Repetir el problema 2.17 usando sólo $10$ observaciones para cada muestra y tomando una observación de cada nivel $x= 1, 2, 3, . . . , 10$. ¿Qué impacto tiene usar $n = 10$ sobre las respuestas en el problema 2.17? Comparar las longitudes de los intervalos de confianza y el aspecto de los histogramas.
+
+***Solución:***
+Vamos a ejecutar el mismo código del punto anterior.
+
+Primero vamos crear una tabla de $10$ filas por $500$ columnas donde vamos a guardar las observaciones generadas por el modelo 
+
+```{r}
+x = seq(1,10,by = 1)
+Y = data.frame(x)
+
+length(x)
+```
+
+Ahora vamos a iterar $500$ veces para conseguir las observaciones asociadas al modelo. Para generar el valor del error usamos la función en R `rnorm()`
+
+```{r}
+k = 500
+
+for (i in 1:k) {
+  e = rnorm(10,mean = 0,sd = sqrt(16))
+  y = 50 + 10*x + e
+  Y[,i+1] = y
+  names(Y)[i+1] = i 
+}
+
+dim(Y)
+```
+
+- *Pendiente e intercepto*
+
+```{r}
+B = c("Beta_0","Beta_1")
+xYlm = data.frame(B)
+
+for (i in 1:k) {
+  lmss = lm(Y[,i+1] ~ Y[,1])
+  xYlm[,i+1] = lmss$coefficients 
+}
+
+dim(xYlm)
+```
+
+```{r}
+beta0 = as.numeric(xYlm[1,2:501])
+beta1 = as.numeric(xYlm[2,2:501])
+hist(x=beta0)
+hist(x=beta1)
+```
+
+***Podemos ver que la varianza en los histogramas es más alta cuando se tienen menos observaciones***
+
+- *Estimando una respuesta puntual*
+
+```{r}
+x0 = 5
+xY_hat = data.frame(x0)
+
+for (i in 1:k) {
+  xY_hat[,i+1] = xYlm[1,i+1] + xYlm[2,i+1]*x0
+}
+dim(xY_hat)
+
+y_hat = as.numeric(xY_hat[1,2:501])
+hist(y_hat)
+```
+
+***Nuevamente vemos que la varianza es más alta cuando se tiene una muestra más pequeña***
+
+- *Intervalo de confianza para la pendiente*
+
+```{r}
+alpha = 0.05
+
+IC_beta = c("IC_beta1_inf","IC_beta1_sup")
+IC_B = data.frame(IC_beta)
+
+for (i in 1:k) {
+  meanx = mean(x)
+  meany = mean(Y[,i+1])
+  Sxy = sum(((x-meanx))*Y[,i+1])
+  Sxx = sum(((x-meanx)^2))
+  
+  SS_T = sum((Y[,i+1]^2))-(((sum(Y[,i+1]))^2)/length(x))
+  SS_Res = SS_T - (xYlm[2,i+1]*Sxy)
+  SS_R = xYlm[2,i+1]*Sxy
+
+  df_T = length(x) -1
+  df_Res = length(x) - 2
+  df_R = 1
+
+  MS_Res = SS_Res/df_Res
+  MS_R = SS_R/df_R
+  se_beta1 = sqrt(MS_Res/Sxx)
+  
+  IC_B[1,i+1] = xYlm[2,i+1]-(qt((1-alpha/2),df=(length(x)-2))*(se_beta1))
+  IC_B[2,i+1] = xYlm[2,i+1]+(qt((1-alpha/2),df=(length(x)-2))*(se_beta1))
+}
+
+dim(IC_B)
+```
+
+***Las longitudes de los intervalos son mayores cuando se tiene un tamaño de muestra más pequeño***
+
+- *Estimando una respuesta media*
+
+```{r}
+alpha = 0.05
+x0 = 5
+
+IC_muyx0 = c("IC_muyx0_inf","IC_muyx0_sup")
+IC_muyx0 = data.frame(IC_muyx0)
+
+for (i in 1:k) {
+  meanx = mean(x)
+  meany = mean(Y[,i+1])
+  Sxy = sum(((x-meanx))*Y[,i+1])
+  Sxx = sum(((x-meanx)^2))
+  
+  SS_T = sum((Y[,i+1]^2))-(((sum(Y[,i+1]))^2)/length(x))
+  SS_Res = SS_T - (xYlm[2,i+1]*Sxy)
+  SS_R = xYlm[2,i+1]*Sxy
+
+  df_T = length(x) -1
+  df_Res = length(x) - 2
+  df_R = 1
+
+  MS_Res = SS_Res/df_Res
+  MS_R = SS_R/df_R
+  muyx0 =xYlm[1,i+1] + xYlm[2,i+1]*x0
+  se_muyx0 = sqrt( MS_Res*( (1/length(x)) + ((x0-meanx)^2)/Sxx ) )
+  
+  IC_muyx0[1,i+1] = muyx0 - (qt((1-alpha/2),df=(length(x)-2)))*se_muyx0
+  IC_muyx0[2,i+1] = muyx0 + (qt((1-alpha/2),df=(length(x)-2)))*se_muyx0
+}
+
+dim(IC_muyx0)
+```
+
+***Las longitudes de los intervalos son mayores cuando se tiene un tamaño de muestra más pequeño***
+
+### **Ejercicio 2.20**
+Se tiene el modelo de regresión lineal simple ${y} = {\beta_0} * {\beta_1}x + \varepsilon$, con $E(\varepsilon)=0$, $Var(\varepsilon) = \sigma^2$ y $\varepsilon$ no correlacionada.
+
+a. Demostrar que $E(MS_R) = \sigma^2 + \beta_1^2S_{xx}$
+
+***Solución:***
+
+Tenemos que
+
+$$
+\begin{split}
+E(MS_R)
+& = E(\frac{SS_R}{df_R}) \\
+& = \frac{1}{df_R}E(SS_R) \\
+& = \frac{1}{df_R}E(\hat{\beta_1}S_{xy}) \\
+& = \frac{1}{df_R}E(\hat{\beta_1}^2S_{xx}) \\
+& = \frac{S_{xx}}{df_R}E(\hat{\beta_1}^2) \\
+& = \frac{S_{xx}}{df_R}E(V(\hat{\beta_1})+(E(\hat{\beta_1}))^2) \\
+& = \frac{S_{xx}}{df_R}E(\frac{\sigma^2}{S_{xx}}+\beta_1^2) \\
+& = \frac{\sigma^2}{df_R} + \frac{S_{xx}\beta_1^2}{df_R}  \\
+\end{split}
+$$
+
+donde al tener que $df_R = 1$  entonces
+
+$$
+\begin{split}
+E(MS_R)
+& = \sigma^2 + S_{xx}\beta_1^2 \\
+\end{split}
+$$
+
+b. Demostrar que $E(MS_{Res}) = \sigma^2$
+
+***Solución:***
+
+Tenemos que
+
+$$
+\begin{split}
+E(MS_{Res})
+& = E(\frac{SS_{Res}}{df_{Res}}) \\
+& = \frac{1}{df_{Res}}E(SS_{Res}) \\
+& = \frac{1}{df_{Res}}(\sigma^2df_{Res}) \\
+& = \sigma^2 \\
+\end{split}
+$$
+
+### **Ejercicio 2.22**
+Considérese el estimador $7\sigma^2$ de máxima verosimilitud de $\sigma^2$ en el modelo de regresión lineal simple. Se sabe que $\sigma^2$ es un estimador sesgado de $\sigma^2$.
+
+a. Demostrar la cantidad de sesgo en $\tilde{\sigma}^{2}$
+
+***Solución:***
+
+$\tilde{\sigma}^{2}=\mathrm{SSE} / n . \text { Luego, } E\left(\tilde{\sigma}^{2}\right)=\frac{n-2}{n} \sigma^{2} \text { entonces el sesgo es }\left(1-\frac{n-2}{n}\right) \sigma^{2}$
+
+b. ¿Qué sucede con el sesgo a medida que se hace grande el tamaño n de la muestra?
+
+***Solución:***
+
+A medida que $n$ crece el sesgo del estimador tiende a cero
+
+### **Ejercicio 2.24**
+Se tienen los datos del problema 2.12. Supóngase que el consumo de Vapor y la temperatura ambiente tienen distribución normal conjunta.
+
+```{r}
+y<-c(185.79,214.47,288.03,424.84,454.68,539.03,621.55,675.06,562.03,452.93,369.95,273.98)
+x<-c(21,24,32,47,50,59,68,74,62,50,41,30)
+```
+
+a. Determinar la correlación entre el consumo de vapor y la temperatura ambiente promedio mensual.
+
+***Solución:***
+
+Tenemos el modelo $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$. Por lo tanto el modelo ajustado se calcula de la siguiente manera:
+
+```{r}
+meanx = mean(x)
+meany = mean(y)
+Sxy = sum(((x-meanx))*y)
+Sxx = sum(((x-meanx)^2))
+beta1 = Sxy/Sxx
+beta0 = meany - beta1*meanx
+
+SS_T = sum((y^2))-(((sum(y))^2)/length(x)) # Suma de cuadrados de las observaciones corregidas
+SS_Res = SS_T - (beta1*Sxy) # Suma de cuadrados de los residuales
+SS_R = beta1*Sxy # Suma de cuadrados de la regresion o suma de cuadrados del modelo
+
+df_T = length(x) -1 # Grados de libertad de las observaciones corregidas
+df_Res = length(x) - 2 # Grados de libertad de la suma de cuadrados de los residuales
+df_R = 1 # Grados de libertad de la suma de cuadrados de la regresión
+
+
+MS_Res = SS_Res/df_Res
+MS_R = SS_R/df_R
+MS_Res = SS_Res/df_Res
+```
+
+Ahora teniendo en cuenta que el estimador de la correlación dada una muestra que es 
+
+$$
+r=\frac{\sum_{i=1}^{n} y_{i}\left(x_{i}-\bar{x}\right)}{\left[\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2} \sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2}\right]^{1 / 2}}=\frac{S_{x y}}{\left[S_{x x} S S_{\mathrm{T}}\right]^{1 / 2}}
+$$
+
+tenemos que para ver la correlación entre el peso de una persona y la presión sistólica según la muestra suministrada es
+
+```{r}
+r = Sxy/((Sxx*SS_T)^(1/2))
+r
+```
+
+b. Probar la hipótesis que $\rho = 0$.
+
+***Solución:***
+
+Teniendo en cuenta el estadístico de prueba 
+
+$$
+t_{0}=\frac{r \sqrt{n-2}}{\sqrt{1-r^{2}}} \sim t_{(n-2)}
+$$
+
+donde rechazamos la hipótesis de correlación nula si $|t_0| > t_{\alpha/2,n-2}$. De este modo
+
+```{r}
+alpha = 0.05
+t0 = r*(df_Res^(1/2))/((1-(r^2))^(1/2))
+t0test = qt(1-alpha/2,df=df_Res)
+pvalue = 2*pt(-abs(t0),df=df_Res)
+
+t0
+t0test
+pvalue
+```
+
+***Dado que tenemos que $|t_0|=272.255 > t_{1-\alpha/2,n-2}=2.228139$ rechazamos la hipótesis que nos dice que $\rho = 0$ con una significancia del $5\%$ y un p valor de $1.099192e^{-20}$***
+
+
+
+c. Probar la hipótesis que $\rho = 0.5$.
+
+***Solución:***
+
+Para un test $H_0: \rho = \rho_0$ contra $H_1: \rho \neq \rho_0$ donde para $n\geq 25$ tenemos que la estadística 
+
+$$
+Z=\operatorname{arctanh} r=\frac{1}{2} \ln \frac{1+r}{1-r}
+$$
+
+tiene aproximadamente distribución normal con media 
+
+$$
+\mu_{Z}=\operatorname{arctanh} \rho=\frac{1}{2} \ln \frac{1+\rho}{1-\rho}
+$$
+
+y varianza 
+
+$$
+\sigma_{Z}^{2}=(n-3)^{-1}
+$$
+
+por lo tanto para verificar la hipótesis $H_0: \rho = \rho_0$ tenemos que calcular la estadítica
+
+$$
+Z_{0}=\left(\operatorname{arctanh} r-\operatorname{arctanh} \rho_{0}\right)(n-3)^{1 / 2}
+$$
+
+donde debemos rechazar $H_0 : \rho = \rho_0$ si $|Z_0| > Z_{1-\alpha/2}$. De este modo para ver si la correlación entre el peso de una persona y su presión sistólica es $H_0 : \rho = 0.5$ tenemos
+
+```{r}
+p0 = 0.5
+alpha = 0.05
+
+Z0 = (atanh(r) - atanh(p0))*((length(x)-3)^(1/2))
+Z0test = qnorm(1-alpha/2)
+pvalue_Z0 = 2*pnorm(-abs(Z0))
+
+Z0
+Z0test
+pvalue_Z0
+```
+
+***Dado que tenemos que $|Z_0|=13.79796 > Z_{1-\alpha/2}=1.959964$ rechazamos la hipótesis que nos dice que $\rho = 0.5$ con una significancia del $5\%$ y un p valor de $2.621524e^{-43}$***
+
+
+d. Determinar un intervalo de confianza de 99% para $\rho$.
+
+***Solución:***
+
+Para construir un intervalo de confianza veamos que 
+
+$$
+\tanh \left(\operatorname{arctanh} r-\frac{Z_{\alpha / 2}}{\sqrt{n-3}}\right) \leq \rho \leq \tanh \left(\operatorname{arctanh} r+\frac{Z_{\alpha / 2}}{\sqrt{n-3}}\right)
+$$
+
+de este modo un intervalo de confianza del $95\%$ para $\rho$
+
+```{r}
+IC_rho_inf = tanh( atanh(r) - (qnorm( 1-alpha/2 )/((length( x )-3)^(1/2))) )
+IC_rho_sup = tanh( atanh(r) + (qnorm( 1-alpha/2 )/((length( x )-3)^(1/2))) )
+IC_rho = c(IC_rho_inf,IC_rho_sup)
+IC_rho
+```
+
+### **Ejercicio 2.26**
+
+Se tiene el modelo de regresión lineal simple $y= \beta_0 + \beta_1 x + \varepsilon$ donde tenemos que $\beta_0$ es conocida
+
+a. Determinar el estimador de $\beta_1$
+
+***Solución:***
+
+$$
+\begin{split}
+0 & = -2 \sum_{i=1}^{n}\left(y_{i}\right.\left.-\beta_{0}-\hat{\beta}_{1} x i\right) x_{i} \\
+\hat{\beta} 1 \sum_{i=1}^{n} x_{i}^{2} &=\sum_{i=1}^{n}\left(y_{i}-\beta_{0}\right) x_{i} \\
+\hat{\beta_{1}} &=\frac{\sum_{i=1}^{n}\left(y_{i}-\beta_{0}\right) x_{i}}{\sum_{i=1}^{n} x_{i}^{2}}
+\end{split}
+$$
+
+b. Cual es la varianza del estimador de la pendiente encontrado en a
+
+***Solución:***
+
+$$
+\begin{split}
+\operatorname{Var}(\hat{\beta} 1) &=\frac{1}{\left(\sum_{i=1}^{n} x_{i}^{2}\right)^{2}} \operatorname{Var}\left(\sum_{i=1}^{n} y_{i} x_{i}\right) \\
+&=\frac{1}{\left(\sum_{i=1}^{n} x_{i}^{2}\right)^{2}}\left(\sum_{i=1}^{n} x_{i}^{2}\right) \sigma^{2} \\
+&=\frac{\sigma^{2}}{\sum_{i=1}^{n} x_{i}^{2}}
+\end{split}
+$$
+
+c. Determinar un intervalo de confianza para la pendiente.
+
+***Solución:***
+
+Tenemos que  
+
+$$\frac{\hat{\beta} 1-\beta 1}{\sqrt{M S_{E} / \sum x_{i}^{2}}} \sim t_{n-2}$$ 
+
+entonces podemos definir el intervalo de confianza como
+
+$$\hat{\beta} 1 \pm t_{\alpha / 2, n-2} \sqrt{M S_{E} / \sum x_{i}^{2}}$$ 
+
+Donde vemos que es más estrecho que cuando ambos son desconocidos.
+
